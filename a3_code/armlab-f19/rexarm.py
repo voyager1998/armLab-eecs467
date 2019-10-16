@@ -9,6 +9,9 @@ Implement the missing functions
 add anything you see fit
 
 """
+def clamp_radians_joints(theta, angle_min, angle_max):
+    return np.clip(theta, angle_min, angle_max)
+
 
 """ Radians to/from  Degrees conversions """
 D2R = 3.141592/180.0
@@ -27,8 +30,8 @@ class Rexarm():
         self.estop = False
         """TODO: Find the physical angle limits of the Rexarm. Remember to keep track of this if you include more motors"""
         self.angle_limits = np.array([
-                            [-180.00, -180.00, -180.00, -180.00, -180.00],
-                            [ 179.99,  179.99,  179.99,  179.99,  179.99]], dtype=np.float)*D2R
+                            [-120.00, -100.00, -100.00, -100.00, -70.00],
+                            [ 120.00,  100.00,  100.00,  100.00,  22.00]], dtype=np.float)*D2R
 
         """ Commanded Values """
         self.num_joints = len(joints)
@@ -163,6 +166,8 @@ class Rexarm():
 
     def clamp(self, joint_angles):
         """TODO: Implement this function to clamp the joint angles"""
+        for i in range(0,5):
+            joint_angles[i] = np.clip(joint_angles[i], self.angle_limits[0][i], self.angle_limits[1][i])
         return joint_angles
 
     def calc_A_FK(self, theta, link):
