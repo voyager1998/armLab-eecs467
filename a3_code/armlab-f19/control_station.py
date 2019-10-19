@@ -188,7 +188,7 @@ class DisplayThread(QThread):
             self.updateStatusMessage.emit(self.sm.status_message)
             self.updateJointReadout.emit(self.rexarm.joint_angles_fb)
             self.updateEndEffectorReadout.emit(list(self.rexarm.rexarm_FK()))
-            print(self.rexarm.rexarm_FK())
+            # print(self.rexarm.rexarm_FK())
             time.sleep(0.1)
     
 """GUI Class"""
