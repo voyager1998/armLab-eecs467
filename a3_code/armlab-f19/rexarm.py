@@ -236,7 +236,7 @@ class Rexarm():
 # calculated in Radian
         pose[3] = pose[3] * D2R
 
-        base_angle = np.arctan2(pose[1], pose[0])
+        base_angle = np.arctan2(-pose[0], pose[1])
         z3 = pose[2] - self.wrist_len * math.sin(pose[3])
         l3 = math.sqrt(pose[0] ** 2 + pose[1] ** 2) - self.wrist_len * math.cos(pose[3])
 
