@@ -184,9 +184,9 @@ class Rexarm():
             [0, 0, 1, 0], \
             [0, 0, 0, 1]]
         if link == 0: #base
-            A = [[math.cos(theta), 0, -math.sin(theta), 0], \
-                [math.sin(theta), 0, math.cos(theta), 0], \
-                [0, -1, 1, self.dh_table[0]["d"]], \
+            A = [[-math.sin(theta), 0, math.cos(theta), 0], \
+                [math.cos(theta), 0, math.sin(theta), 0], \
+                [0, 1, 0, self.dh_table[0]["d"]], \
                 [0, 0, 0, 1]]            
         if link == 1:
             A = [[0, 0, 1, 0], \
@@ -212,7 +212,7 @@ class Rexarm():
         current_pose = np.array([0.0, 0.0, 0.0, 1.0])
         print("---------------------------------------")
         print(current_pose)
-        for i in range(0, joint_num):
+        for i in range(joint_num-1, -1, -1):
             A = self.calc_A_FK(self.position[i], i)
             current_pose = np.matmul(np.array(A), current_pose)
             print(current_pose)

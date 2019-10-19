@@ -9,3 +9,4 @@ a3_code/botlab-f19/src/lcmtypes/*.py
 .vscode/
 */lcmtypes/*.hpp
 *test.py
+*__pycache__*
