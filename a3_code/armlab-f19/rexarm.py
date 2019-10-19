@@ -234,15 +234,15 @@ class Rexarm():
         """
 
 # calculated in Radian
-        pose.phi = pose.phi * D2R
+        pose[3] = pose[3] * D2R
 
-        base_angle = np.arctan2(pose.y, pose.x)
+        base_angle = np.arctan2(pose[1], pose[0])
         if base_angle < self.angle_limits[0][0] or base_angle > self.angle_limits[1][0]:
             print("Out of theta0 limit!")
             return None
 
-        z3 = pose.z - self.wrist_len * math.sin(pose.phi)
-        l3 = math.sqrt(pose.x ** 2 + pose.y ** 2) - self.wrist_len * math.cos(pose.phi)
+        z3 = pose[2] - self.wrist_len * math.sin(pose[3])
+        l3 = math.sqrt(pose[0] ** 2 + pose[1] ** 2) - self.wrist_len * math.cos(pose[3])
 
         longedge2 = l3**2 + (z3-self.dh_table[0]["d"])**2
         cosalpha = (self.dh_table[1]["d"]** 2 + longedge2 - self.dh_table[2]["d"]** 2) / (2 * self.dh_table[1]["d"] * math.sqrt(longedge2))
@@ -264,7 +264,7 @@ class Rexarm():
             print("Out of theta2 limit!")
             return None
 
-        theta3 = math.pi/2 - theta1 - theta2 - pose.phi
+        theta3 = math.pi/2 - theta1 - theta2 - pose[3]
         if theta3 < self.angle_limits[0][3] or theta1 > self.angle_limits[1][3]:
             print("Out of theta3 limit!")
             return None
