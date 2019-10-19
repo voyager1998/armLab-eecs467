@@ -259,7 +259,7 @@ class Rexarm():
         theta3 = math.pi/2 - theta1 - theta2 - pose[3]
 
 # joint angles are in radians
-        base_angle = -base_angle
+        # base_angle = -base_angle
         theta1 = -theta1
         theta2 = -theta2
         theta3 = -theta3
