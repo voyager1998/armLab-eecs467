@@ -188,16 +188,16 @@ class Rexarm():
                 [math.cos(theta), 0, math.sin(theta), 0], \
                 [0, 1, 0, self.dh_table[0]["d"]], \
                 [0, 0, 0, 1]]            
-        if link == 1:
-            A = [[0, 0, 1, 0], \
-                [-1, 0, 0, 0], \
-                [0, -1, 0, self.dh_table[1]["d"]], \
-                [0, 0, 0, 1]]    
-        if link == 2:
-            A = [[math.cos(theta), -math.sin(theta), 0, self.dh_table[2]["d"] * math.cos(theta)], \
-                [math.sin(theta), math.cos(theta), 0, self.dh_table[2]["d"] * math.sin(theta)], \
+        if link == 1 or link == 2 or link == 3:
+            A = [[math.cos(theta), -math.sin(theta), 0, -self.dh_table[1]["d"] * math.sin(theta)], \
+                [math.sin(theta), math.cos(theta), 0, self.dh_table[1]["d"] * math.cos(theta)], \
                 [0, 0, 1, 0], \
-                [0, 0, 0, 1]]
+                [0, 0, 0, 1]]    
+        # if link == 3:
+        #     A = [[math.cos(theta), -math.sin(theta), 0, self.dh_table[2]["d"] * math.cos(theta)], \
+        #         [math.sin(theta), math.cos(theta), 0, self.dh_table[2]["d"] * math.sin(theta)], \
+        #         [0, 0, 1, 0], \
+        #         [0, 0, 0, 1]]
         return A
 
     def rexarm_FK(self, joint_num=4):
