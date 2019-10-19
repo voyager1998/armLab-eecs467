@@ -1,6 +1,7 @@
 #rexarm.py
 import numpy as np
 import time
+import math
 
 """ 
 TODO:
@@ -28,7 +29,8 @@ class Rexarm():
         self.gripper_closed_pos = np.deg2rad(0.0)
         self.gripper_state = True
         self.estop = False
-        """TODO: Find the physical angle limits of the Rexarm. Remember to keep track of this if you include more motors"""
+        """Find the physical angle limits of the Rexarm. Remember to keep track of this if you include more motors"""
+        # in radians
         self.angle_limits = np.array([
                             [-120.00, -100.00, -100.00, -100.00, -70.00],
                             [ 120.00,  20.00,  40.00,  70.00,  22.00]], dtype=np.float)*D2R
@@ -47,18 +49,18 @@ class Rexarm():
         self.move_fb = [0] *  self.num_joints
 
         """ Arm Lengths """
-        # TODO: Fill in the measured dimensions.
-        self.base_len     = 0.0
-        self.shoulder_len = 0.0
-        self.elbow_len    = 0.0
-        self.wrist_len    = 0.0
+        # Fill in the measured dimensions.
+        self.base_len     = 0.023
+        self.shoulder_len = 0.055
+        self.elbow_len    = 0.055
+        self.wrist_len    = 0.12
 
         """ DH Table """
         # TODO: Fill in the variables.
-        self.dh_table = [{"d" : 0, "a" : 0, "alpha": 0}, \
-                         {"d" : 0, "a" : 0, "alpha": 0}, \
-                         {"d" : 0, "a" : 0, "alpha": 0}, \
-                         {"d" : 0, "a" : 0, "alpha": 0}]
+        self.dh_table = [{"d" : self.base_len, "a" : 0, "alpha": 0}, \
+                         {"d" : self.shoulder_len, "a" : 0, "alpha": 0}, \
+                         {"d" : self.elbow_len, "a" : 0, "alpha": 0}, \
+                         {"d" : self.wrist_len, "a" : 0, "alpha": 0}]
 
     def initialize(self):
         for joint in self.joints:
@@ -165,7 +167,7 @@ class Rexarm():
                 break
 
     def clamp(self, joint_angles):
-        """TODO: Implement this function to clamp the joint angles"""
+        """Implement this function to clamp the joint angles"""
         for i in range(0,5):
             joint_angles[i] = np.clip(joint_angles[i], self.angle_limits[0][i], self.angle_limits[1][i])
         return joint_angles
@@ -177,26 +179,45 @@ class Rexarm():
         link is the index of the joint, and it is 0 indexed (0 is base, 1 is shoulder ...)
         returns a matrix A(2D array)
         """
-
         A = [[1, 0, 0, 0], \
             [0, 1, 0, 0], \
             [0, 0, 1, 0], \
             [0, 0, 0, 1]]
-
+        if link == 0: #base
+            A = [[-math.sin(theta), 0, math.cos(theta), 0], \
+                [math.cos(theta), 0, math.sin(theta), 0], \
+                [0, 1, 0, self.dh_table[0]["d"]], \
+                [0, 0, 0, 1]]            
+        if link == 1 or link == 2 or link == 3:
+            A = [[math.cos(theta), -math.sin(theta), 0, -self.dh_table[link]["d"] * math.sin(theta)], \
+                [math.sin(theta), math.cos(theta), 0, self.dh_table[link]["d"] * math.cos(theta)], \
+                [0, 0, 1, 0], \
+                [0, 0, 0, 1]]    
+        # if link == 3:
+        #     A = [[math.cos(theta), -math.sin(theta), 0, self.dh_table[2]["d"] * math.cos(theta)], \
+        #         [math.sin(theta), math.cos(theta), 0, self.dh_table[2]["d"] * math.sin(theta)], \
+        #         [0, 0, 1, 0], \
+        #         [0, 0, 0, 1]]
         return A
 
     def rexarm_FK(self, joint_num=4):
         """
         TODO: implement this function
-
         Calculates forward kinematics for rexarm
         takes a DH table filled with DH parameters of the arm
         and the link to return the position for
         returns a 4-tuple (x, y, z, phi) representing the pose of the
         desired link
         """
-
-        return (0, 0, 0, 90)
+        current_pose = np.array([0.0, 0.0, 0.0, 1.0])
+        #print("---------------------------------------")
+        #print(current_pose)
+        for i in range(joint_num-1, -1, -1):
+            A = self.calc_A_FK(self.position[i], i)
+            current_pose = np.matmul(np.array(A), current_pose)
+            #print(current_pose)
+        phi = math.pi/2 + self.position[3] + self.position[1] + self.position[2]
+        return (current_pose[0], current_pose[1], current_pose[2], phi)
 
     def rexarm_IK(self, pose):
         """
@@ -211,4 +232,49 @@ class Rexarm():
         then phi is 0 degree.
         returns a 4-tuple of joint angles or None if configuration is impossible
         """
-        pass
+
+# calculated in Radian
+        pose[3] = pose[3] * D2R
+
+        base_angle = np.arctan2(-pose[0], pose[1])
+        z3 = pose[2] - self.wrist_len * math.sin(pose[3])
+        l3 = math.sqrt(pose[0] ** 2 + pose[1] ** 2) - self.wrist_len * math.cos(pose[3])
+
+        longedge2 = l3**2 + (z3-self.dh_table[0]["d"])**2
+        cosalpha = (self.dh_table[1]["d"]** 2 + longedge2 - self.dh_table[2]["d"]** 2) / (2 * self.dh_table[1]["d"] * math.sqrt(longedge2))
+        if cosalpha < -1 or cosalpha > 1:
+            print("Out of range!")
+            return None
+        alpha = math.acos(cosalpha)
+        beta = np.arctan2(z3 - self.dh_table[0]["d"], l3)
+        theta1 = math.pi / 2 - alpha - beta
+        
+        cosgamma = (self.dh_table[1]["d"]** 2 + self.dh_table[2]["d"]** 2 - longedge2) / (2 * self.dh_table[1]["d"] * self.dh_table[2]["d"])
+        if cosgamma < -1 or cosgamma > 1:
+            print("Out of range!")
+            return None
+        gamma = math.acos(cosgamma)
+        theta2 = math.pi - gamma
+
+        theta3 = math.pi/2 - theta1 - theta2 - pose[3]
+
+# joint angles are in radians
+        # base_angle = -base_angle
+        theta1 = -theta1
+        theta2 = -theta2
+        theta3 = -theta3
+        joint_angles = [base_angle, theta1, theta2, theta3]
+        if base_angle < self.angle_limits[0][0] or base_angle > self.angle_limits[1][0]:
+            print("Out of theta0 limit!")
+            return None
+        if theta1 < self.angle_limits[0][1] or theta1 > self.angle_limits[1][1]:
+            print("Out of theta1 limit!")
+            print(theta1)
+            return None
+        if theta2 < self.angle_limits[0][2] or theta1 > self.angle_limits[1][2]:
+            print("Out of theta2 limit!")
+            return None
+        if theta3 < self.angle_limits[0][3] or theta1 > self.angle_limits[1][3]:
+            print("Out of theta3 limit!")
+            return None
+        return joint_angles
