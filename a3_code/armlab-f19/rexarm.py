@@ -210,13 +210,13 @@ class Rexarm():
         desired link
         """
         current_pose = np.array([0.0, 0.0, 0.0, 1.0])
-        print("---------------------------------------")
-        print(current_pose)
+        # print("---------------------------------------")
+        # print(current_pose)
         for i in range(joint_num-1, -1, -1):
             A = self.calc_A_FK(self.position[i], i)
             current_pose = np.matmul(np.array(A), current_pose)
-            print(current_pose)
-        phi = math.pi/2 - self.position[0] - self.position[1] - self.position[2]
+            # print(current_pose)
+        phi = math.pi/2 + self.position[3] + self.position[1] + self.position[2]
         return (current_pose[0], current_pose[1], current_pose[2], phi)
 
     def rexarm_IK(self, pose):
