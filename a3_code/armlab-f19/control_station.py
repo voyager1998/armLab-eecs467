@@ -184,7 +184,7 @@ class DisplayThread(QThread):
         self.sm=state_machine
 
     def run(self):
-        pose = [0.5, 0.8, 0.0, -90]
+        pose = [0.09, 0.16,-0.04, -0.80*R2D]
         print(self.rexarm.rexarm_IK(pose))
         while True:
             self.updateStatusMessage.emit(self.sm.status_message)

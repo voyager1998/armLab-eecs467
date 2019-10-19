@@ -189,8 +189,8 @@ class Rexarm():
                 [0, 1, 0, self.dh_table[0]["d"]], \
                 [0, 0, 0, 1]]            
         if link == 1 or link == 2 or link == 3:
-            A = [[math.cos(theta), -math.sin(theta), 0, -self.dh_table[1]["d"] * math.sin(theta)], \
-                [math.sin(theta), math.cos(theta), 0, self.dh_table[1]["d"] * math.cos(theta)], \
+            A = [[math.cos(theta), -math.sin(theta), 0, -self.dh_table[link]["d"] * math.sin(theta)], \
+                [math.sin(theta), math.cos(theta), 0, self.dh_table[link]["d"] * math.cos(theta)], \
                 [0, 0, 1, 0], \
                 [0, 0, 0, 1]]    
         # if link == 3:
@@ -210,12 +210,12 @@ class Rexarm():
         desired link
         """
         current_pose = np.array([0.0, 0.0, 0.0, 1.0])
-        # print("---------------------------------------")
-        # print(current_pose)
+        #print("---------------------------------------")
+        #print(current_pose)
         for i in range(joint_num-1, -1, -1):
             A = self.calc_A_FK(self.position[i], i)
             current_pose = np.matmul(np.array(A), current_pose)
-            # print(current_pose)
+            #print(current_pose)
         phi = math.pi/2 + self.position[3] + self.position[1] + self.position[2]
         return (current_pose[0], current_pose[1], current_pose[2], phi)
 
@@ -253,6 +253,7 @@ class Rexarm():
         theta1 = math.pi / 2 - alpha - beta
         if theta1 < self.angle_limits[0][1] or theta1 > self.angle_limits[1][1]:
             print("Out of theta1 limit!")
+            print(theta1)
             return None
         
         cosgamma = (self.dh_table[1]["d"]** 2 + self.dh_table[2]["d"]** 2 - longedge2) / (2 * self.dh_table[1]["d"] * self.dh_table[2]["d"])
@@ -270,6 +271,6 @@ class Rexarm():
             return None
 
 # joint angles are in radians
-        joint_angles = [base_angle, theta1, theta2, theta3]
+        joint_angles = [-base_angle, -theta1, -theta2, -theta3]
         
         return joint_angles
