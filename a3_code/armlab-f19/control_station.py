@@ -184,8 +184,8 @@ class DisplayThread(QThread):
         self.sm=state_machine
 
     def run(self):
-        pose = [0.09, 0.16,-0.04, -0.80*R2D]
-        print(self.rexarm.rexarm_IK(pose))
+        # pose = [0.09, 0.16,-0.04, -0.80*R2D]
+        # print(self.rexarm.rexarm_IK(pose))
         while True:
             self.updateStatusMessage.emit(self.sm.status_message)
             self.updateJointReadout.emit(self.rexarm.joint_angles_fb)
