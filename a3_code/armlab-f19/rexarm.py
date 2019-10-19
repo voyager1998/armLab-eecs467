@@ -1,6 +1,7 @@
 #rexarm.py
 import numpy as np
 import time
+import math
 
 """ 
 TODO:
@@ -28,7 +29,7 @@ class Rexarm():
         self.gripper_closed_pos = np.deg2rad(0.0)
         self.gripper_state = True
         self.estop = False
-        """TODO: Find the physical angle limits of the Rexarm. Remember to keep track of this if you include more motors"""
+        """Find the physical angle limits of the Rexarm. Remember to keep track of this if you include more motors"""
         self.angle_limits = np.array([
                             [-120.00, -100.00, -100.00, -100.00, -70.00],
                             [ 120.00,  20.00,  40.00,  70.00,  22.00]], dtype=np.float)*D2R
@@ -47,18 +48,18 @@ class Rexarm():
         self.move_fb = [0] *  self.num_joints
 
         """ Arm Lengths """
-        # TODO: Fill in the measured dimensions.
-        self.base_len     = 0.0
-        self.shoulder_len = 0.0
-        self.elbow_len    = 0.0
-        self.wrist_len    = 0.0
+        # Fill in the measured dimensions.
+        self.base_len     = 0.023
+        self.shoulder_len = 0.055
+        self.elbow_len    = 0.055
+        self.wrist_len    = 0.12
 
         """ DH Table """
         # TODO: Fill in the variables.
-        self.dh_table = [{"d" : 0, "a" : 0, "alpha": 0}, \
-                         {"d" : 0, "a" : 0, "alpha": 0}, \
-                         {"d" : 0, "a" : 0, "alpha": 0}, \
-                         {"d" : 0, "a" : 0, "alpha": 0}]
+        self.dh_table = [{"d" : self.base_len, "a" : 0, "alpha": 0}, \
+                         {"d" : self.shoulder_len, "a" : 0, "alpha": 0}, \
+                         {"d" : self.elbow_len, "a" : 0, "alpha": 0}, \
+                         {"d" : self.wrist_len, "a" : 0, "alpha": 0}]
 
     def initialize(self):
         for joint in self.joints:
@@ -165,7 +166,7 @@ class Rexarm():
                 break
 
     def clamp(self, joint_angles):
-        """TODO: Implement this function to clamp the joint angles"""
+        """Implement this function to clamp the joint angles"""
         for i in range(0,5):
             joint_angles[i] = np.clip(joint_angles[i], self.angle_limits[0][i], self.angle_limits[1][i])
         return joint_angles
@@ -211,4 +212,26 @@ class Rexarm():
         then phi is 0 degree.
         returns a 4-tuple of joint angles or None if configuration is impossible
         """
-        pass
+
+# calculated in Radian
+        base_angle = np.arctan2(pose.y, pose.x)
+
+        z3 = pose.z - self.wrist_len * math.sin(pose.phi)
+        l3 = math.sqrt(pose.x ** 2 + pose.y ** 2) - self.wrist_len * math.cos(pose.phi)
+
+        longedge2 = l3**2 + (z3-self.dh_table[0]["d"])**2
+        cosalpha = (self.dh_table[1]["d"]** 2 + longedge2 - self.dh_table[2]["d"]** 2) / (2 * self.dh_table[1]["d"] * math.sqrt(longedge2))
+        alpha = math.acos(cosalpha)
+        beta = np.arctan2(z3 - self.dh_table[0]["d"], l3)
+        theta1 = math.pi / 2 - alpha - beta
+        
+        cosgamma = (self.dh_table[1]["d"]** 2 + self.dh_table[2]["d"]** 2 - longedge2) / (2 * self.dh_table[1]["d"] * self.dh_table[2]["d"])
+        gamma = math.acos(cosgamma)
+        theta2 = math.pi - gamma
+
+        theta3 = math.pi/2 - theta1 - theta2 - pose.phi
+
+# convert all to Degree
+        joint_angles = [base_angle * R2D, theta1 * R2D, theta2 * R2D, theta3 * R2D]
+        
+        return joint_angles
