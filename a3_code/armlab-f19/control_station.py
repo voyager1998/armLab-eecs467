@@ -167,6 +167,7 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
+            print("hey")
             self.task1.begin_task()
         elif self.task_num == 2:
             pass
@@ -393,14 +394,14 @@ class Gui(QMainWindow):
             # self.ui.rdoutRGB.setText("({},{},{})".format(*rgb))
             # self.ui.rdoutRGB.setText("({},{},{})".format(*hsv))
             self.ui.rdoutRGB.setText(self.hue_to_classification(hsv[0]))
-            # print(self.hue_to_classification(hsv[0]))
+            print(hsv[0])
     
     # might do kmeans later so figured we might as well do the distance thing now
     def hue_to_classification(self, hue):
         hue = 2*hue*D2R
         # R G B P O Y
         colors = ['red', 'green', 'blue', 'purple', 'orange', 'yellow']
-        means = np.array([177.3, 75.67, 105.0, 162.833, 8.833, 28.83])
+        means = np.array([177.3, 75.67, 105.0, 132.833, 8.833, 28.83])
         means = 2*means*D2R
         min_dist = float('inf')
         min_i = 0

@@ -106,14 +106,14 @@ class StateMachine():
         # oo
         # oo
         # just
-        objectPoints = np.array([[8*I2M, 0, 0.5*I2M],
-                                [8*I2M, 1*I2M, 0.5*I2M],
-                                [8*I2M, 1*I2M, 1.5*I2M],
-                                [8*I2M, 0, 1.5*I2M]])
+        objectPoints = np.array([[-1*I2M/2, 6*I2M, -0.05],
+                                [1*I2M/2, 6*I2M, -0.05],
+                                [-1*I2M/2, 6*I2M/2, -0.05+I2M],
+                                [1*I2M/2, 6*I2M/2, -0.05+I2M]])
 
         # Use the center of the tags as image points. Make sure they correspond to the 3D points.
         imagePoints = np.array([tag.center for tag in self.tags])
-        # print(self.tags)
+        print(self.tags)
         print('imagePoints:', imagePoints)
         success, rvec, tvec = cv2.solvePnP(objectPoints, imagePoints, cameraMatrix, None)
         rotation_matrix, _ = cv2.Rodrigues(rvec)
