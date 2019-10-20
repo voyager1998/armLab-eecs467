@@ -601,7 +601,7 @@ class Ui_MainWindow(object):
         self.chk_directcontrol.setText(_translate("MainWindow", "Direct Control", None))
         self.rdoutMousePixels.setText(_translate("MainWindow", "(U,V,D)", None))
         self.rdoutRGB.setText(_translate("MainWindow", "(R,G,B)", None))
-        self.RGBValueLabel.setText(_translate("MainWindow", "RGB:", None))
+        self.RGBValueLabel.setText(_translate("MainWindow", "RGB OR HSV:", None))
         self.PixelCoordLabel.setText(_translate("MainWindow", "Mouse Coordinates:", None))
         self.btn_task1.setText(_translate("MainWindow", "TASK 1", None))
         self.btn_task2.setText(_translate("MainWindow", "TASK 2", None))

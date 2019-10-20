@@ -1,0 +1,60 @@
+First 3/ Last 3 are 3 values in dark environment / 3 values in bright environment
+Last value is average
+
+Red:
+176
+175
+179
+0 = 180
+178
+176
+177.3
+
+Green:
+82
+76
+60
+78
+77
+81
+75.67
+
+Blue:
+106
+105
+102
+106
+106
+105
+105.0
+
+Purple:
+169
+159
+154
+175
+146
+174
+162.833
+
+Orange:
+9
+10
+11
+7
+8
+8
+8.833
+
+Yellow:
+30
+30
+31
+26
+27
+29
+28.83
+
+
+AVERAGES (RGBPOY):
+177.3, 75.67, 105.0, 136.2, 8.833, 28.83

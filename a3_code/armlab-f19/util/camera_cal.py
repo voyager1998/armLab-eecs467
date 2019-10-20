@@ -32,9 +32,9 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 h=480
 w=640
 # size of each checker square [mm]
-square_size = 25.4
+square_size = 23
 # pattern of corners on checker board
-pattern_size = (8, 6)
+pattern_size = (9, 6)
 
 # builds array of reference corner locations 
 pattern_points = np.zeros((pattern_size[0]*pattern_size[1],3), np.float32) 
@@ -88,6 +88,8 @@ if __name__ == '__main__':
                     obj_points.append(pattern_points)
                     cv2.drawChessboardCorners(rgb_frame, pattern_size, corners, found)
                     cv2.imshow('camera', rgb_frame)
+                    print("taken screenshot")
+                print("got here")
             else:
                 cv2.imshow('camera', rgb_frame)
         # continue until ESC

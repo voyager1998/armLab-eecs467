@@ -71,7 +71,7 @@ class VideoThread(QThread):
         self.rawCapture = PiRGBArray(self.camera, size=(640,480))
         self.detector = Detector("tagStandard41h12", quad_decimate=2.0, quad_sigma=1.0, debug=False)
         # TODO: load your camera parameters here. These camera parameters are intrinsics.
-        self.camera_params=[610, 610, 320, 240] # [fx, fy, cx, cy]
+        self.camera_params=[639.86127538, 637.62613535, 320.40954469, 220.36223075] # [fx, fy, cx, cy]
 
     def run(self):
         for frame in self.camera.capture_continuous(self.rawCapture, format="rgb", use_video_port=True):
@@ -389,7 +389,25 @@ class Gui(QMainWindow):
 
             rgb = self.rgb_image[y, x] # [r, g, b] of this pixel
             hsv_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_RGB2HSV)
-            self.ui.rdoutRGB.setText("(R,G,B)")
+            hsv = hsv_image[y, x]
+            # self.ui.rdoutRGB.setText("({},{},{})".format(*rgb))
+            # self.ui.rdoutRGB.setText("({},{},{})".format(*hsv))
+            self.ui.rdoutRGB.setText(self.hue_to_classification(hsv[0]))
+            # print(self.hue_to_classification(hsv[0]))
+    
+    # yes i know this is a stupid algo but it works and doesn't slow anything down
+    def hue_to_classification(self, hue):
+        # means = np.array([177.3, 75.67, 105.0, 136.2, 8.833, 28.83])
+        colors = ['orange', 'yellow', 'green', 'blue', 'purple', 'red']
+        means = [8.833, 28.83, 75.67, 105.0, 162.833, 177.3]
+        closest_dist = 180
+        closest = 0
+        for i in range(0, len(means)):
+            dist = min(abs(means[i] - hue), abs(hue - (means[i] - 180)))
+            if dist < closest_dist:
+                closest_dist = dist
+                closest = i
+        return colors[closest]
 
     def mousePressEvent(self, QMouseEvent):
         """ 
