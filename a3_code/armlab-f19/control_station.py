@@ -395,19 +395,21 @@ class Gui(QMainWindow):
             self.ui.rdoutRGB.setText(self.hue_to_classification(hsv[0]))
             # print(self.hue_to_classification(hsv[0]))
     
-    # yes i know this is a stupid algo but it works and doesn't slow anything down
+    # might do kmeans later so figured we might as well do the distance thing now
     def hue_to_classification(self, hue):
-        # means = np.array([177.3, 75.67, 105.0, 136.2, 8.833, 28.83])
-        colors = ['orange', 'yellow', 'green', 'blue', 'purple', 'red']
-        means = [8.833, 28.83, 75.67, 105.0, 162.833, 177.3]
-        closest_dist = 180
-        closest = 0
-        for i in range(0, len(means)):
-            dist = min(abs(means[i] - hue), abs(hue - (means[i] - 180)))
-            if dist < closest_dist:
-                closest_dist = dist
-                closest = i
-        return colors[closest]
+        hue = 2*hue*D2R
+        # R G B P O Y
+        colors = ['red', 'green', 'blue', 'purple', 'orange', 'yellow']
+        means = np.array([177.3, 75.67, 105.0, 162.833, 8.833, 28.83])
+        means = 2*means*D2R
+        min_dist = float('inf')
+        min_i = 0
+        for i,mean in enumerate(means):
+            dist = (np.cos(hue) - np.cos(mean))**2 + (np.sin(hue) - np.sin(mean))**2
+            if dist < min_dist:
+                min_dist = dist
+                min_i = i
+        return colors[min_i]
 
     def mousePressEvent(self, QMouseEvent):
         """ 
