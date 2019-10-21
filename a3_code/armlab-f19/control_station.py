@@ -164,6 +164,7 @@ class TaskThread(QThread):
             elif self.task_num == 3:
                 pass
             elif self.task_num == 5:
+                print("task5 pressed!")
                 I2M = 0.0254
                 pose_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
                 put_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
