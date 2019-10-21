@@ -28,6 +28,7 @@ from picamera import PiCamera
 from apriltags3 import Detector
 
 from task1 import task1
+from task5 import task5
 
 
 """ Radians to/from  Degrees conversions """
@@ -153,6 +154,7 @@ class TaskThread(QThread):
         QThread.__init__(self, parent=parent) 
         self.task_num = 0
         self.task1 = task1(state_machine)
+		self.task5 = task5
 
     def run(self):
         while True:
@@ -162,6 +164,9 @@ class TaskThread(QThread):
                 pass
             elif self.task_num == 3:
                 pass
+			elif self.task_num == 5:
+				self.task5.operate_task()
+						
             time.sleep(0.05)
 
     def set_task_num(self, task_num):
