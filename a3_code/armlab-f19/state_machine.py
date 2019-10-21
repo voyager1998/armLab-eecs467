@@ -106,10 +106,10 @@ class StateMachine():
         # oo
         # oo
         # just
-        objectPoints = np.array([[-1*I2M/2, 6*I2M, -0.05],
-                                [1*I2M/2, 6*I2M, -0.05],
-                                [-1*I2M/2, 6*I2M/2, -0.05+I2M],
-                                [1*I2M/2, 6*I2M/2, -0.05+I2M]])
+        objectPoints = np.array([[-1*I2M/2, 6*I2M, -0.058+I2M/2],
+                                [1*I2M/2, 6*I2M, -0.058+I2M/2],
+                                [-1*I2M/2, 6*I2M/2, -0.058+I2M/2*3],
+                                [1*I2M/2, 6*I2M/2, -0.058+I2M/2*3]])
 
         # Use the center of the tags as image points. Make sure they correspond to the 3D points.
         imagePoints = np.array([tag.center for tag in self.tags])
