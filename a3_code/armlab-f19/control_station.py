@@ -153,7 +153,7 @@ class TaskThread(QThread):
         QThread.__init__(self, parent=parent) 
         self.task_num = 0
         self.task1 = task1(state_machine)
-		self.task5 = task5()
+        self.task5 = task5()
 
     def run(self):
         while True:
@@ -163,11 +163,11 @@ class TaskThread(QThread):
                 pass
             elif self.task_num == 3:
                 pass
-			elif self.task_num == 5:
-				I2M = 0.0254
-				pose_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
-				put_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
-				self.task5.begin_task(pose_block_position, put_block_position, self.rexarm, D2R)
+            elif self.task_num == 5:
+                I2M = 0.0254
+                pose_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
+                put_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
+                self.task5.begin_task(pose_block_position, put_block_position, self.rexarm, D2R)
             time.sleep(0.05)
 
     def set_task_num(self, task_num):
