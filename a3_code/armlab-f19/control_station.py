@@ -170,18 +170,17 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("hey")
-            self.task1.begin_task()
-        elif self.task_num == 2:
-            pass
-        elif self.task_num == 3:
-            pass
-        elif self.task_num == 5:
             print("task5 pressed!")
             I2M = 0.0254
             pose_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
             put_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
             self.task5.begin_task(pose_block_position, put_block_position, self.rexarm, D2R)
+        elif self.task_num == 2:
+            pass
+        elif self.task_num == 3:
+            pass
+        elif self.task_num == 5:
+            pass
 
 class DisplayThread(QThread):
     updateStatusMessage = pyqtSignal(str)
@@ -246,7 +245,6 @@ class Gui(QMainWindow):
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_current_state, "calibrate"))
 
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
-        self.ui.btn_task5.clicked.connect(partial(self.taskThread.set_task_num, 5))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
