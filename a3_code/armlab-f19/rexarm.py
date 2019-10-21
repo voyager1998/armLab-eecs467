@@ -265,16 +265,16 @@ class Rexarm():
         theta3 = -theta3
         joint_angles = [base_angle, theta1, theta2, theta3]
         if base_angle < self.angle_limits[0][0] or base_angle > self.angle_limits[1][0]:
-            print("Out of theta0 limit!")
+            print("Out of theta0 limit:", base_angle)
             return None
         if theta1 < self.angle_limits[0][1] or theta1 > self.angle_limits[1][1]:
-            print("Out of theta1 limit!")
+            print("Out of theta1 limit:", theta1)
             print(theta1)
             return None
         if theta2 < self.angle_limits[0][2] or theta1 > self.angle_limits[1][2]:
-            print("Out of theta2 limit!")
+            print("Out of theta2 limit:", theta2)
             return None
         if theta3 < self.angle_limits[0][3] or theta1 > self.angle_limits[1][3]:
-            print("Out of theta3 limit!")
+            print("Out of theta3 limit:", theta3)
             return None
         return joint_angles
