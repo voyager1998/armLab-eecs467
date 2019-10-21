@@ -134,7 +134,6 @@ class VideoThread(QThread):
 
         return mask_image
 
-
 class LogicThread(QThread):
     # Run the lowerest level state machine.
     def __init__(self, state_machine, parent=None):
@@ -154,7 +153,7 @@ class TaskThread(QThread):
         QThread.__init__(self, parent=parent) 
         self.task_num = 0
         self.task1 = task1(state_machine)
-		self.task5 = task5
+		self.task5 = task5()
 
     def run(self):
         while True:
@@ -165,13 +164,16 @@ class TaskThread(QThread):
             elif self.task_num == 3:
                 pass
 			elif self.task_num == 5:
-				self.task5.operate_task()
-						
+				I2M = 0.0254
+				pose_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
+				put_block_position = [-1*I2M/2, 6*I2M, -0.058+I2M/2, -45]
+				self.task5.begin_task(pose_block_position, put_block_position, self.rexarm, D2R)
             time.sleep(0.05)
 
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
+            print("hey")
             self.task1.begin_task()
         elif self.task_num == 2:
             pass
@@ -398,14 +400,14 @@ class Gui(QMainWindow):
             # self.ui.rdoutRGB.setText("({},{},{})".format(*rgb))
             # self.ui.rdoutRGB.setText("({},{},{})".format(*hsv))
             self.ui.rdoutRGB.setText(self.hue_to_classification(hsv[0]))
-            # print(self.hue_to_classification(hsv[0]))
+            print(hsv[0])
     
     # might do kmeans later so figured we might as well do the distance thing now
     def hue_to_classification(self, hue):
         hue = 2*hue*D2R
         # R G B P O Y
         colors = ['red', 'green', 'blue', 'purple', 'orange', 'yellow']
-        means = np.array([177.3, 75.67, 105.0, 162.833, 8.833, 28.83])
+        means = np.array([177.3, 75.67, 105.0, 132.833, 8.833, 28.83])
         means = 2*means*D2R
         min_dist = float('inf')
         min_i = 0
