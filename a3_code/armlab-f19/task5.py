@@ -3,15 +3,15 @@ import time
 
 # sample structure for a complex task
 class task5():
-    def __init__(self):
-        #self.fsm = fsm
-        self.current_step = 0
+	def __init__(self):
+		#self.fsm = fsm
+		self.current_step = 0
 
-    def operate_task(self):
-        """TODO"""
-        pass
+	def operate_task(self):
+		"""TODO"""
+		pass
 
-    def begin_task(self, endpoint, placepoint, rexarm, D2R):
+	def begin_task(self, endpoint, placepoint, rexarm, D2R):
 		current_angles = []
 
 		#Get to block
@@ -23,25 +23,24 @@ class task5():
 			if i == 0:
 				set_positions[4] = 20 #Find a constant that works here
 			rexarm.set_positions(set_positions, update_now = True)
-			final_angles = set_positions
+			current_angles = set_positions
 			time.sleep(0.05)
 		
-		#Pick it up
-		for i in range(0, len(joint_positions) - 1):
-			current_angles[i] = 0
-			rexarm.set_positions(current_angles, update_now = True)
-			time.sleep(0.05)
+		# #Pick it up
+		# for i in range(0, len(current_angles) - 1):
+		# 	current_angles[i] = 0
+		# 	rexarm.set_positions(current_angles, update_now = True)
+		# 	time.sleep(0.05)
 
-		joint_positions_placepoint = rexarm.rexarm_IK(placepoint)
-		#Put it down in correct location
-		for i in range(len(joint_positions_placepoint) - 1, -1, -1):
-			set_positions = [0] * 5
-			for x in range(i, len(joint_positions_placepoint)):
-				set_positions[x] = joint_positions_placepoint[x]
-			if i == 0:
-				set_positions[4] = 20 #Find a constant that works here
-			rexarm.set_positions(set_positions, update_now = True)
-			final_angles = set_positions
-			time.sleep(0.05)
+		# joint_positions_placepoint = rexarm.rexarm_IK(placepoint)
+		# #Put it down in correct location
+		# for i in range(len(joint_positions_placepoint) - 1, -1, -1):
+		# 	set_positions = [0] * 5
+		# 	for x in range(i, len(joint_positions_placepoint)):
+		# 		set_positions[x] = joint_positions_placepoint[x]
+		# 	if i == 0:
+		# 		set_positions[4] = 20 #Find a constant that works here
+		# 	rexarm.set_positions(set_positions, update_now = True)
+		# 	time.sleep(0.05)
 			
 
