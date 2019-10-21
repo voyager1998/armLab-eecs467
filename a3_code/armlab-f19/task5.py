@@ -3,15 +3,16 @@ import time
 
 # sample structure for a complex task
 class task5():
-    def __init__(self):
-        #self.fsm = fsm
+    def __init__(self, StateMachine):
+        self.fsm = StateMachine
         self.current_step = 0
 
     def operate_task(self):
         """TODO"""
         pass
 
-    def begin_task(self, endpoint, placepoint, rexarm, D2R):
+    def begin_task(self, endpoint, placepoint, D2R):
+        rexarm = self.fsm.rexarm
         print("begin task 5!")
         current_angles = []
 
