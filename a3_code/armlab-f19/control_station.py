@@ -246,6 +246,7 @@ class Gui(QMainWindow):
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_current_state, "calibrate"))
 
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
+        self.ui.btn_task5.clicked.connect(partial(self.taskThread.set_task_num, 5))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
