@@ -103,9 +103,9 @@ class StateMachine():
         # 3D coordinates of the center of AprilTags in the arm frame in meters.
         I2M = 0.0254
         # To calibrate, form a square of cubes 8 inches from the front roller that looks like this
-        # oo
-        # oo
-        # just
+        # 34
+        # 56
+        # (order matters!!!! from bottom to top)
         objectPoints = np.array([[-1*I2M/2, 6*I2M/2, -0.058+I2M/2*3],
                                 [1*I2M / 2, 6*I2M / 2, -0.058+ I2M / 2* 3],
                                 [-1*I2M/2, 6*I2M, -0.058+I2M/2],
