@@ -66,8 +66,8 @@ class Rexarm():
         for joint in self.joints:
             joint.enable_torque()
             joint.set_position(0.0)
-            joint.set_torque_limit(1.0)
-            joint.set_speed(0.05)
+            joint.set_torque_limit(0.25)
+            joint.set_speed(0.25)
 
     def open_gripper(self):
         """ TODO """
@@ -152,11 +152,12 @@ class Rexarm():
         return self.move_fb
 
     def get_feedback(self):
-        self.get_positions()
-        self.get_speeds()
-        self.get_loads()
-        self.get_temps()
-        self.get_moving_status()
+        # self.get_positions()
+        # self.get_speeds()
+        # self.get_loads()
+        # self.get_temps()
+        # self.get_moving_status()
+        pass
 
     def pause(self, secs):
         time_start = time.time()
