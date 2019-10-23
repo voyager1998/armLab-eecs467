@@ -50,7 +50,7 @@ class Rexarm():
 
         """ Arm Lengths """
         # Fill in the measured dimensions.
-        self.base_len     = 0.023
+        self.base_len     = 0.112
         self.shoulder_len = 0.055
         self.elbow_len    = 0.055
         self.wrist_len    = 0.12
@@ -66,8 +66,8 @@ class Rexarm():
         for joint in self.joints:
             joint.enable_torque()
             joint.set_position(0.0)
-            joint.set_torque_limit(0.25)
-            joint.set_speed(0.25)
+            joint.set_torque_limit(1.0)
+            joint.set_speed(0.05)
 
     def open_gripper(self):
         """ TODO """
@@ -232,7 +232,6 @@ class Rexarm():
         then phi is 0 degree.
         returns a 4-tuple of joint angles or None if configuration is impossible
         """
-
 # calculated in Radian
         pose[3] = pose[3] * D2R
 
@@ -243,7 +242,7 @@ class Rexarm():
         longedge2 = l3**2 + (z3-self.dh_table[0]["d"])**2
         cosalpha = (self.dh_table[1]["d"]** 2 + longedge2 - self.dh_table[2]["d"]** 2) / (2 * self.dh_table[1]["d"] * math.sqrt(longedge2))
         if cosalpha < -1 or cosalpha > 1:
-            print("Out of range!")
+            print("cosalpha out of range!", cosalpha)
             return None
         alpha = math.acos(cosalpha)
         beta = np.arctan2(z3 - self.dh_table[0]["d"], l3)
@@ -251,7 +250,7 @@ class Rexarm():
         
         cosgamma = (self.dh_table[1]["d"]** 2 + self.dh_table[2]["d"]** 2 - longedge2) / (2 * self.dh_table[1]["d"] * self.dh_table[2]["d"])
         if cosgamma < -1 or cosgamma > 1:
-            print("Out of range!")
+            print("cosgamma out of range!", cosgamma)
             return None
         gamma = math.acos(cosgamma)
         theta2 = math.pi - gamma

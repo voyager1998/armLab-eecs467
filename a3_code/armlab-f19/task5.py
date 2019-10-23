@@ -20,13 +20,14 @@ class task5():
         joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
         for i in range(len(joint_positions_endpoint) - 1, -1, -1):
             set_positions = [0] * 5
+            set_positions[4] = -20 # open gripper
             for x in range(i, len(joint_positions_endpoint)):
                 set_positions[x] = joint_positions_endpoint[x]
             if i == 0:
-                set_positions[4] = 20 #Find a constant that works here
+                set_positions[4] = 20 # close gripper
             rexarm.set_positions(set_positions, update_now = True)
             current_angles = set_positions
-            time.sleep(0.05)
+            time.sleep(1)
         
         # #Pick it up
         # for i in range(0, len(current_angles) - 1):
