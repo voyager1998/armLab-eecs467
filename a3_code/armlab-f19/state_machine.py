@@ -11,7 +11,7 @@ from lcmtypes import pose_xyt_t
 from lcmtypes import occupancy_grid_t
 from lcmtypes import mbot_status_t
 from lcmtypes import mbot_command_t
-from util.our_utils import rot_tran_to_homo
+from util.our_utils import *
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
@@ -126,7 +126,7 @@ class StateMachine():
         # TODO: implement the function that transform pose_t of the tag to the arm's
         # frame of reference.
         # Update extrinsic_mtx but DONT persist it
-        self.extrinsic_mtx = np.linalg.inv(self.rot_tran_to_homo(rotation_matrix, tvec))
+        self.extrinsic_mtx = np.linalg.inv(rot_tran_to_homo(rotation_matrix, tvec))
         for tag in self.tags:
             # pose_t is the x,y,z of the center of the tag in camera frame
             pose_t = np.append(tag.pose_t,[1]).reshape((4,1))
