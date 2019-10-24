@@ -275,7 +275,7 @@ class Gui(QMainWindow):
 
         """Setup Threads"""
         self.videoThread = VideoThread(self.camera)
-        # self.videoThread.updateFrame.connect(self.setImage)
+        self.videoThread.updateFrame.connect(self.setImage)
         self.videoThread.updateAprilTags.connect(self.updateAprilTags)
         self.videoThread.start()
 
