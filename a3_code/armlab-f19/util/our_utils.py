@@ -13,7 +13,7 @@ def return_home(rexarm, gripper_angle):
     home_pose[4] = gripper_angle
     rexarm.set_positions(home_pose, update_now = True)    
 
-def pick_1x1_block(rexarm, endpoint, placepoint, D2R):
+def pick_1x1_block(rexarm, endpoint, D2R):
     print("begin picking up 1x1 block!")
     #Get to block
     for phi in range(-20, -91, -10):
@@ -71,3 +71,6 @@ def locate_1x1_block(tags, extrinsic_mtx):
     pick_block_position[0] = pick_block_position[0] - 0.01 # shift target 1 cm to the left
     print("target pose: ", pick_block_position)
     return pick_block_position
+
+def runToBlock(block_pose):
+    pass

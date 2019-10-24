@@ -176,8 +176,7 @@ class TaskThread(QThread):
         if self.task_num == 1:
             print("task5 pressed!")
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
-            put_block_position = block_pose
-            self.task5.begin_task(block_pose, put_block_position, D2R)
+            self.task5.begin_task(block_pose, D2R)
         elif self.task_num == 2:
             print("Return to Home Pose!")
             self.task1.begin_task(self.state_machine.rexarm.get_positions()[4])
