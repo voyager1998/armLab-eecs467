@@ -33,7 +33,7 @@ class Rexarm():
         # in radians
         self.angle_limits = np.array([
                             [-120.00, -100.00, -100.00, -100.00, -70.00],
-                            [ 120.00,  20.00,  40.00,  40.00,  22.00]], dtype=np.float)*D2R
+                            [ 120.00,  20.00,  40.00,  130.00,  22.00]], dtype=np.float)*D2R
 
         """ Commanded Values """
         self.num_joints = len(joints)
@@ -71,20 +71,13 @@ class Rexarm():
 
     def open_gripper(self):
         """ TODO """
-        """ not complete """
-        if self.gripper_state:
-            self.gripper_state = False
-            self.position[-1] = -20
-            #joint.set_position(self.position)
+        self.gripper_state = False
         pass
 
     def close_gripper(self):
         """ TODO """
-        """ not complete """
-       # if not self.gripper_state:
         self.gripper_state = True
-        self.position[-1] = 4
-        self.joints[4].set_position(self.position)
+        pass
 
     def set_positions(self, joint_angles, update_now = True):
         joint_angles = self.clamp(joint_angles)
