@@ -41,6 +41,11 @@ class task5():
         rexarm.set_positions(set_positions, update_now = True)
         time.sleep(1)
 
+        set_positions[0] = 0
+        set_positions[1] -81
+        set_positions[2] = -30
+        set_positions[3] = 125
+        rexarm.set_positions(set_positions, update_now = True)
         #Pick it up
         # for i in range(len(joint_positions_endpoint) - 1, 0, -1):
         #     set_positions[i] = joint_positions_endpoint[i]

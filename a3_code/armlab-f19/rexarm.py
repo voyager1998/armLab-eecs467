@@ -33,7 +33,7 @@ class Rexarm():
         # in radians
         self.angle_limits = np.array([
                             [-120.00, -100.00, -100.00, -100.00, -70.00],
-                            [ 120.00,  20.00,  40.00,  70.00,  22.00]], dtype=np.float)*D2R
+                            [ 120.00,  20.00,  40.00,  130.00,  22.00]], dtype=np.float)*D2R
 
         """ Commanded Values """
         self.num_joints = len(joints)
