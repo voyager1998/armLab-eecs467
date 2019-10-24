@@ -17,7 +17,12 @@ class task5():
         current_angles = []
 
         #Get to block
-        joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
+        for phi in range(-20, -91, -10):
+            endpoint[3] = phi
+            joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
+            if joint_positions_endpoint != None:
+                break
+
         set_positions = [0] * 5
         set_positions[4] = -20 # open gripper
 
@@ -30,9 +35,12 @@ class task5():
             rexarm.set_positions(set_positions, update_now = True)
             current_angles = set_positions
             time.sleep(1)
-        set_positions[4] = 20 # close gripper
-        rexarm.set_positions(set_positions, update_now = True)
         
+        # close gripper
+        set_positions[4] = 5
+        rexarm.set_positions(set_positions, update_now = True)
+        time.sleep(1)
+
         #Pick it up
         for i in range(0, len(current_angles) - 1):
         	current_angles[i] = 0
