@@ -182,8 +182,9 @@ class TaskThread(QThread):
                 pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
 
                 block_to_rex = np.dot(self.state_machine.extrinsic_mtx, pose_homo)
-                pose_block_position = np.dot(block_to_rex, np.array([0,0,0,1]).reshape((4,1)))
+                pose_block_position = np.dot(block_to_rex, np.array([0,0,I2M/2,1])).reshape(4,)
             pose_block_position[3] = -40
+            pose_block_position[0] = pose_block_position[0] - 0.01 # shift target 1 cm to the left
             print("target pose: ", pose_block_position)
             self.task5.begin_task(pose_block_position, put_block_position, D2R)
         elif self.task_num == 2:
