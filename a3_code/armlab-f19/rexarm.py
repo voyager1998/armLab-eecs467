@@ -33,7 +33,7 @@ class Rexarm():
         # in radians
         self.angle_limits = np.array([
                             [-120.00, -100.00, -100.00, -100.00, -70.00],
-                            [ 120.00,  20.00,  40.00,  70.00,  22.00]], dtype=np.float)*D2R
+                            [ 120.00,  100.00,  100.00,  100.00,  22.00]], dtype=np.float)*D2R
 
         """ Commanded Values """
         self.num_joints = len(joints)
@@ -50,7 +50,7 @@ class Rexarm():
 
         """ Arm Lengths """
         # Fill in the measured dimensions.
-        self.base_len     = 0.023
+        self.base_len     = 0.112
         self.shoulder_len = 0.055
         self.elbow_len    = 0.055
         self.wrist_len    = 0.12
@@ -71,13 +71,20 @@ class Rexarm():
 
     def open_gripper(self):
         """ TODO """
-        self.gripper_state = False
+        """ not complete """
+        if self.gripper_state:
+            self.gripper_state = False
+            self.position[-1] = -20
+            #joint.set_position(self.position)
         pass
 
     def close_gripper(self):
         """ TODO """
+        """ not complete """
+       # if not self.gripper_state:
         self.gripper_state = True
-        pass
+        self.position[-1] = 4
+        self.joints[4].set_position(self.position)
 
     def set_positions(self, joint_angles, update_now = True):
         joint_angles = self.clamp(joint_angles)
@@ -157,6 +164,7 @@ class Rexarm():
         self.get_loads()
         self.get_temps()
         self.get_moving_status()
+        pass
 
     def pause(self, secs):
         time_start = time.time()
@@ -232,7 +240,6 @@ class Rexarm():
         then phi is 0 degree.
         returns a 4-tuple of joint angles or None if configuration is impossible
         """
-
 # calculated in Radian
         pose[3] = pose[3] * D2R
 
@@ -243,7 +250,7 @@ class Rexarm():
         longedge2 = l3**2 + (z3-self.dh_table[0]["d"])**2
         cosalpha = (self.dh_table[1]["d"]** 2 + longedge2 - self.dh_table[2]["d"]** 2) / (2 * self.dh_table[1]["d"] * math.sqrt(longedge2))
         if cosalpha < -1 or cosalpha > 1:
-            print("Out of range!")
+            print("cosalpha out of range!", cosalpha)
             return None
         alpha = math.acos(cosalpha)
         beta = np.arctan2(z3 - self.dh_table[0]["d"], l3)
@@ -251,7 +258,7 @@ class Rexarm():
         
         cosgamma = (self.dh_table[1]["d"]** 2 + self.dh_table[2]["d"]** 2 - longedge2) / (2 * self.dh_table[1]["d"] * self.dh_table[2]["d"])
         if cosgamma < -1 or cosgamma > 1:
-            print("Out of range!")
+            print("cosgamma out of range!", cosgamma)
             return None
         gamma = math.acos(cosgamma)
         theta2 = math.pi - gamma
@@ -265,16 +272,16 @@ class Rexarm():
         theta3 = -theta3
         joint_angles = [base_angle, theta1, theta2, theta3]
         if base_angle < self.angle_limits[0][0] or base_angle > self.angle_limits[1][0]:
-            print("Out of theta0 limit!")
+            print("Out of theta0 limit:", base_angle)
             return None
         if theta1 < self.angle_limits[0][1] or theta1 > self.angle_limits[1][1]:
-            print("Out of theta1 limit!")
+            print("Out of theta1 limit:", theta1)
             print(theta1)
             return None
         if theta2 < self.angle_limits[0][2] or theta1 > self.angle_limits[1][2]:
-            print("Out of theta2 limit!")
+            print("Out of theta2 limit:", theta2)
             return None
         if theta3 < self.angle_limits[0][3] or theta1 > self.angle_limits[1][3]:
-            print("Out of theta3 limit!")
+            print("Out of theta3 limit:", theta3)
             return None
         return joint_angles

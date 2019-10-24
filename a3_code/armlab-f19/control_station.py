@@ -28,6 +28,8 @@ from picamera import PiCamera
 from apriltags3 import Detector
 
 from task1 import task1
+from task5 import task5
+from util.our_utils import *
 
 
 """ Radians to/from  Degrees conversions """
@@ -71,7 +73,8 @@ class VideoThread(QThread):
         self.rawCapture = PiRGBArray(self.camera, size=(640,480))
         self.detector = Detector("tagStandard41h12", quad_decimate=2.0, quad_sigma=1.0, debug=False)
         # TODO: load your camera parameters here. These camera parameters are intrinsics.
-        self.camera_params=[639.86127538, 637.62613535, 320.40954469, 220.36223075] # [fx, fy, cx, cy]
+        # self.camera_params=[639.86127538, 637.62613535, 320.40954469, 220.36223075] # [fx, fy, cx, cy]
+        self.camera_params=[596.13380911, 598.59497209, 322.69869837, 232.09155051] # [fx, fy, cx, cy]
 
     def run(self):
         for frame in self.camera.capture_continuous(self.rawCapture, format="rgb", use_video_port=True):
@@ -133,7 +136,6 @@ class VideoThread(QThread):
 
         return mask_image
 
-
 class LogicThread(QThread):
     # Run the lowerest level state machine.
     def __init__(self, state_machine, parent=None):
@@ -152,26 +154,36 @@ class TaskThread(QThread):
     def __init__(self, state_machine, parent=None):
         QThread.__init__(self, parent=parent) 
         self.task_num = 0
+        self.state_machine = state_machine
         self.task1 = task1(state_machine)
+        self.task5 = task5(state_machine)
 
     def run(self):
         while True:
             if self.task_num == 1:
-                self.task1.operate_task()
+                pass
+                # self.task1.operate_task()
             elif self.task_num == 2:
                 pass
             elif self.task_num == 3:
+                pass
+            elif self.task_num == 5:
                 pass
             time.sleep(0.05)
 
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("hey")
-            self.task1.begin_task()
+            print("task5 pressed!")
+            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            put_block_position = block_pose
+            self.task5.begin_task(block_pose, put_block_position, D2R)
         elif self.task_num == 2:
-            pass
+            print("Return to Home Pose!")
+            self.task1.begin_task(self.state_machine.rexarm.get_positions()[4])
         elif self.task_num == 3:
+            pass
+        elif self.task_num == 4:
             pass
 
 class DisplayThread(QThread):
@@ -237,6 +249,7 @@ class Gui(QMainWindow):
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_current_state, "calibrate"))
 
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
+        self.ui.btn_task2.clicked.connect(partial(self.taskThread.set_task_num, 2))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
