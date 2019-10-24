@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import time
 
 def rot_tran_to_homo(rotation_matrix, tvec):
@@ -13,7 +14,7 @@ def return_home(rexarm, gripper_angle):
     home_pose[4] = gripper_angle
     rexarm.set_positions(home_pose, update_now = True)    
 
-def pick_1x1_block(rexarm, endpoint, D2R):
+def pick_1x1_block(rexarm, endpoint, placepoint, D2R):
     print("begin picking up 1x1 block!")
     #Get to block
     for phi in range(-20, -91, -10):
@@ -72,5 +73,18 @@ def locate_1x1_block(tags, extrinsic_mtx):
     print("target pose: ", pick_block_position)
     return pick_block_position
 
-def runToBlock(block_pose):
-    pass
+def euclidian_distance(pose1X, pose1Y, pose1Z, pose2X, pose2Y, pose2Z):
+    return math.sqrt((pose1X - pose2X)**2 + (pose1Y - pose2Y)**2 + (pose1Z - pose2Z)**2)
+
+def is_long_block(tags, extrinsic_mtx):
+    for tag in tags:
+        for tag2 in tags:
+            tag1Pose = from_AprilTag_to_pose(tag, extrinsic_mtx)
+            tag2Pose = from_AprilTag_to_pose(tag2, extrinsic_mtx)
+            if euclidian_distance(tag1Pose[0], tag1Pose[1], tag1Pose[2], tag2Pose[0], tag2Pose[1], tag2Pose[2]) < 1.5 * I2M):
+                return (tag1Pose, tag2Pose)
+    return None
+
+def 
+
+    
