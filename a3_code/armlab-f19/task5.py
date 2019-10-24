@@ -20,7 +20,12 @@ class task5():
         joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
         set_positions = [0] * 5
         set_positions[4] = -20 # open gripper
-        for i in range(len(joint_positions_endpoint) - 1, -1, -1):
+
+        set_positions[0] = joint_positions_endpoint[0]
+        rexarm.set_positions(set_positions, update_now = True)
+        current_angles = set_positions
+        time.sleep(1)
+        for i in range(len(joint_positions_endpoint) - 1, 0, -1):
             set_positions[i] = joint_positions_endpoint[i]
             rexarm.set_positions(set_positions, update_now = True)
             current_angles = set_positions
@@ -28,11 +33,11 @@ class task5():
         set_positions[4] = 20 # close gripper
         rexarm.set_positions(set_positions, update_now = True)
         
-        # #Pick it up
-        # for i in range(0, len(current_angles) - 1):
-        # 	current_angles[i] = 0
-        # 	rexarm.set_positions(current_angles, update_now = True)
-        # 	time.sleep(0.05)
+        #Pick it up
+        for i in range(0, len(current_angles) - 1):
+        	current_angles[i] = 0
+        	rexarm.set_positions(current_angles, update_now = True)
+        	time.sleep(0.05)
 
         # joint_positions_placepoint = rexarm.rexarm_IK(placepoint)
         # #Put it down in correct location

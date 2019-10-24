@@ -29,6 +29,7 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
+from util.our_utils import rot_tran_to_homo
 
 
 """ Radians to/from  Degrees conversions """
@@ -176,11 +177,13 @@ class TaskThread(QThread):
             I2M = 0.0254
             pose_block_position = [0, 3*I2M, I2M/2, -90]
             put_block_position = [-1*I2M/2, 6*I2M, I2M/2, -70]
-            # for tag in self.state_machine.tags:
-            #     # pose_t is the x,y,z of the center of the tag in camera frame
-            #     pose_t = np.append(tag.pose_t,[1]).reshape((4,1))
-            #     pose_block_position = np.dot(self.state_machine.extrinsic_mtx, pose_t)
-            
+            for tag in self.state_machine.tags:
+                # pose_t is the x,y,z of the center of the tag in camera frame
+                pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
+
+                block_to_rex = np.dot(self.state_machine.extrinsic_mtx, pose_homo)
+                pose_block_position = np.dot(block_to_rex, np.array([0,0,0,1]).reshape((4,1)))
+            pose_block_position[3] = -40
             print("target pose: ", pose_block_position)
             self.task5.begin_task(pose_block_position, put_block_position, D2R)
         elif self.task_num == 2:
