@@ -152,6 +152,7 @@ class TaskThread(QThread):
     def __init__(self, state_machine, parent=None):
         QThread.__init__(self, parent=parent) 
         self.task_num = 0
+        self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
 
@@ -174,6 +175,12 @@ class TaskThread(QThread):
             I2M = 0.0254
             pose_block_position = [0, 3*I2M, I2M/2, -90]
             put_block_position = [-1*I2M/2, 6*I2M, I2M/2, -70]
+            # for tag in self.state_machine.tags:
+            #     # pose_t is the x,y,z of the center of the tag in camera frame
+            #     pose_t = np.append(tag.pose_t,[1]).reshape((4,1))
+            #     pose_block_position = np.dot(self.state_machine.extrinsic_mtx, pose_t)
+            
+            print("target pose: ", pose_block_position)
             self.task5.begin_task(pose_block_position, put_block_position, D2R)
         elif self.task_num == 2:
             pass
