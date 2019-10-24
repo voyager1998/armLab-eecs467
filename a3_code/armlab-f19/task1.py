@@ -1,4 +1,5 @@
 import numpy as np
+from util.our_utils import *
 
 # sample structure for a complex task
 class task1():
@@ -10,8 +11,7 @@ class task1():
         """TODO"""
         pass
 
-    def begin_task(self):
-        """TODO"""
-        pass
+    def begin_task(self, gripper_angle):
+        return_home(self.fsm.rexarm, gripper_angle)
 
 

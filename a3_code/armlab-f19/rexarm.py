@@ -33,7 +33,7 @@ class Rexarm():
         # in radians
         self.angle_limits = np.array([
                             [-120.00, -100.00, -100.00, -100.00, -70.00],
-                            [ 120.00,  20.00,  40.00,  40.00,  22.00]], dtype=np.float)*D2R
+                            [ 120.00,  100.00,  100.00,  100.00,  22.00]], dtype=np.float)*D2R
 
         """ Commanded Values """
         self.num_joints = len(joints)
@@ -159,11 +159,11 @@ class Rexarm():
         return self.move_fb
 
     def get_feedback(self):
-        # self.get_positions()
-        # self.get_speeds()
-        # self.get_loads()
-        # self.get_temps()
-        # self.get_moving_status()
+        self.get_positions()
+        self.get_speeds()
+        self.get_loads()
+        self.get_temps()
+        self.get_moving_status()
         pass
 
     def pause(self, secs):
