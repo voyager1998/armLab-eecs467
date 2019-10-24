@@ -68,7 +68,7 @@ class VideoThread(QThread):
         self.camera.awb_mode = 'off'
         # TODO: Use fixed awb_gains values instead of
         # using some random initialized value.
-        self.camera.awb_gains = g
+        self.camera.awb_gains = (291/256, 469/256)
         
         self.rawCapture = PiRGBArray(self.camera, size=(640,480))
         self.detector = Detector("tagStandard41h12", quad_decimate=2.0, quad_sigma=1.0, debug=False)
