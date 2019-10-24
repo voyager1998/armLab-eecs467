@@ -110,7 +110,7 @@ class StateMachine():
         # 56
         # (order matters!!!! from bottom to top)
         objectPoints = np.array([[-1*I2M/2, 6*I2M, I2M/2*3],
-                                [1*I2M / 2, 6*I2M, I2M / 2* 3],
+                                [1*I2M / 2, 6*I2M, I2M/2*3],
                                 [-1*I2M/2, 6*I2M, I2M/2],
                                 [1*I2M/2, 6*I2M, I2M/2]])
 
