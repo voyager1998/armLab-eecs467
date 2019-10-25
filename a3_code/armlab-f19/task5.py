@@ -15,5 +15,5 @@ class task5():
         """TODO"""
         pass
 
-    def begin_task(self, endpoint, D2R):
-        pick_1x1_block(self.fsm.rexarm, endpoint, D2R)
+    def begin_task(self, endpoint):
+        pick_1x1_block(self.fsm.rexarm, endpoint)

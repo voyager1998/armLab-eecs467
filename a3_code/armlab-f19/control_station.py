@@ -29,11 +29,11 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
+from task3 import task3
 from util.our_utils import *
 
 
 """ Radians to/from  Degrees conversions """
-D2R = 3.141592/180.0
 R2D = 180.0/3.141592
 #pixel Positions of image in GUI
 MIN_X = 240
@@ -157,6 +157,7 @@ class TaskThread(QThread):
         self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
+        self.task3 = task3(state_machine)
 
     def run(self):
         while True:
@@ -176,12 +177,12 @@ class TaskThread(QThread):
         if self.task_num == 1:
             print("task5 pressed!")
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
-            self.task5.begin_task(block_pose, D2R)
+            self.task5.begin_task(block_pose)
         elif self.task_num == 2:
             print("Return to Home Pose!")
             self.task1.begin_task(self.state_machine.rexarm.get_positions()[4])
         elif self.task_num == 3:
-            pass
+            self.task3.begin_task(self.state_machine.rexarm.get_positions()[4])
         elif self.task_num == 4:
             pass
 
@@ -249,6 +250,7 @@ class Gui(QMainWindow):
 
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
         self.ui.btn_task2.clicked.connect(partial(self.taskThread.set_task_num, 2))
+        self.ui.btn_task3.clicked.connect(partial(self.taskThread.set_task_num, 3))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)

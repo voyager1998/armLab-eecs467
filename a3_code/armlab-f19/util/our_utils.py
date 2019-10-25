@@ -1,6 +1,9 @@
 import numpy as np
 import time
 
+D2R = 3.141592/180.0
+GRIPPER_OPEN = -60 * D2R
+
 def rot_tran_to_homo(rotation_matrix, tvec):
     extrinsic = np.append(rotation_matrix, tvec, axis=1)
     bottom_row = [[0,0,0,1]]
@@ -13,7 +16,7 @@ def return_home(rexarm, gripper_angle):
     home_pose[4] = gripper_angle
     rexarm.set_positions(home_pose, update_now = True)    
 
-def pick_1x1_block(rexarm, endpoint, D2R):
+def pick_1x1_block(rexarm, endpoint):
     print("begin picking up 1x1 block!")
     #Get to block
     for phi in range(-20, -91, -10):
@@ -23,7 +26,7 @@ def pick_1x1_block(rexarm, endpoint, D2R):
             break
 
     set_positions = [0] * 5
-    set_positions[4] = -20 # open gripper
+    set_positions[4] = GRIPPER_OPEN # open gripper
 
     set_positions[0] = joint_positions_endpoint[0]
     rexarm.set_positions(set_positions, update_now = True)
@@ -37,16 +40,23 @@ def pick_1x1_block(rexarm, endpoint, D2R):
     #rexarm.close_gripper()
     
     # close gripper
-    set_positions[4] = 4 * D2R
+    set_positions[4] = 10 * D2R
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
     # return home
-    set_positions[0] = 0
-    set_positions[1] = 0
+    set_positions[0] = 0 * D2R
+    set_positions[1] = 0 * D2R
     set_positions[2] = -90 * D2R
     set_positions[3] = 90 * D2R
-    print("got here 2")
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(2)
+    
+    # return home
+    set_positions[0] = 90 * D2R
+    set_positions[1] = 90 * D2R
+    set_positions[2] = -90 * D2R
+    set_positions[3] = -90 * D2R
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
@@ -71,6 +81,21 @@ def locate_1x1_block(tags, extrinsic_mtx):
     pick_block_position[0] = pick_block_position[0] - 0.01 # shift target 1 cm to the left
     print("target pose: ", pick_block_position)
     return pick_block_position
+
+def put_block_in_trash(rexarm, gripper_angle):
+    set_positions = [0]*5
+    set_positions[0] = 0 * D2R
+    set_positions[1] = 0 * D2R
+    set_positions[2] = 0 * D2R
+    set_positions[3] = -90 * D2R
+    set_positions[4] = gripper_angle
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+
+    set_positions[4] = GRIPPER_OPEN
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+
 
 def runToBlock(block_pose):
     pass
