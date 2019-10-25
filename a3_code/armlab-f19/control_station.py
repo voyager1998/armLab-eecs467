@@ -29,6 +29,7 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
+from runAndPick import runAndPick
 from util.our_utils import *
 
 
@@ -157,12 +158,12 @@ class TaskThread(QThread):
         self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
+        self.runAndPick = runAndPick(state_machine)
 
     def run(self):
         while True:
             if self.task_num == 1:
                 pass
-                # self.task1.operate_task()
             elif self.task_num == 2:
                 pass
             elif self.task_num == 3:
@@ -174,14 +175,16 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("task5 pressed!")
+            print("Start picking block!")
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
             self.task5.begin_task(block_pose, D2R)
         elif self.task_num == 2:
             print("Return to Home Pose!")
             self.task1.begin_task(self.state_machine.rexarm.get_positions()[4])
         elif self.task_num == 3:
-            pass
+            print("Run and Pick!")
+            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            self.runAndPick.begin_task(block_pose)
         elif self.task_num == 4:
             pass
 
@@ -249,6 +252,7 @@ class Gui(QMainWindow):
 
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
         self.ui.btn_task2.clicked.connect(partial(self.taskThread.set_task_num, 2))
+        self.ui.btn_task3.clicked.connect(partial(self.taskThread.set_task_num, 3))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)

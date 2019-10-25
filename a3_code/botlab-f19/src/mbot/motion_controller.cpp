@@ -6,6 +6,7 @@
 #include <lcmtypes/robot_path_t.hpp>
 #include <lcmtypes/timestamp_t.hpp>
 #include <lcmtypes/message_received_t.hpp>
+#include <lcmtypes/mbot_command_t.hpp>
 #include <common/angle_functions.hpp>
 #include <common/pose_trace.hpp>
 #include <common/lcm_config.h>
@@ -199,8 +200,8 @@ public:
     bool timesync_initialized(){ return timesync_initialized_; }
 
     void handleTimesync(const lcm::ReceiveBuffer* buf, const std::string& channel, const timestamp_t* timesync){
-	timesync_initialized_ = true;
-	time_offset = timesync->utime-utime_now();
+        timesync_initialized_ = true;
+        time_offset = timesync->utime-utime_now();
     }
     
     void handlePath(const lcm::ReceiveBuffer* buf, const std::string& channel, const robot_path_t* path)
@@ -240,9 +241,28 @@ public:
     void handlePose(const lcm::ReceiveBuffer* buf, const std::string& channel, const pose_xyt_t* pose)
     {
         /////// TODO: Implement your handler for new pose data ////////////////////    
-        computeOdometryOffset(*pose);
+        // computeOdometryOffset(*pose);
     }
-    
+
+    void handleBlock(const lcm::ReceiveBuffer* buf, const std::string& channel, const mbot_command_t* block_pose_world)
+    {
+        std::vector<pose_xyt_t> temp;
+        temp.push_back(block_pose_world->goal_pose);
+        // temp.push_back(odomToGlobalFrame_);
+        pose_xyt_t start;
+        start.x = 0;
+        start.y = 0;
+        start.theta = 0;
+        temp.push_back(start);
+        targets_ = temp;
+
+        std::cout << "received new path at time: " << block_pose_world->utime << "\n";
+        std::cout << "received position of the block: " << (block_pose_world->goal_pose).x 
+        << ", " << (block_pose_world->goal_pose).y << std::endl;
+
+        assignNextTarget();
+    }
+
 private:
     
     enum State
@@ -353,6 +373,7 @@ int main(int argc, char** argv)
     lcmInstance.subscribe(SLAM_POSE_CHANNEL, &MotionController::handlePose, &controller);
     lcmInstance.subscribe(CONTROLLER_PATH_CHANNEL, &MotionController::handlePath, &controller);
     lcmInstance.subscribe(MBOT_TIMESYNC_CHANNEL, &MotionController::handleTimesync, &controller);
+    lcmInstance.subscribe(MBOT_COMMAND_CHANNEL, &MotionController::handleBlock, &controller);
 
     signal(SIGINT, exit);
     
