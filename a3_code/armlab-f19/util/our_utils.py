@@ -17,6 +17,9 @@ def return_home(rexarm, gripper_angle):
     rexarm.set_positions(home_pose, update_now = True)    
 
 def pick_1x1_block(rexarm, endpoint):
+
+    task5Position = []
+
     print("begin picking up 1x1 block!")
     #Get to block
     for phi in range(-20, -91, -10):
@@ -25,6 +28,7 @@ def pick_1x1_block(rexarm, endpoint):
         if joint_positions_endpoint != None:
             break
 
+    task5Position = joint_positions_endpoint
     set_positions = [0] * 5
     set_positions[4] = GRIPPER_OPEN # open gripper
 
@@ -35,6 +39,7 @@ def pick_1x1_block(rexarm, endpoint):
         set_positions[i] = joint_positions_endpoint[i]
         rexarm.set_positions(set_positions, update_now = True)
         time.sleep(1)
+
 
     print("got here")
     #rexarm.close_gripper()
@@ -58,7 +63,37 @@ def pick_1x1_block(rexarm, endpoint):
     set_positions[2] = -90 * D2R
     set_positions[3] = -90 * D2R
     rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(2)
+
+    return_home(rexarm, set_positions[4])
+
     time.sleep(1)
+
+    #hi
+    #set_positions[4] = GRIPPER_OPEN # open gripper
+
+    task5Position.append(set_positions[3])
+    rexarm.set_positions(task5Position, update_now = True)
+    time.sleep(4)
+    task5Position[4] = 0
+    rexarm.set_positions(task5Position, update_now = True)
+
+    '''
+    set_positions[0] = 0
+    set_positions[1] = 0
+    set_positions[2] = 0
+    set_positions[3] = 0
+    set_positions[0] = joint_positions_endpoint[0]
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+    for i in range(len(joint_positions_endpoint) - 1, 0, -1):
+        set_positions[i] = joint_positions_endpoint[i]
+        rexarm.set_positions(set_positions, update_now = True)
+        time.sleep(1)
+
+    set_positions[4] = 0
+    '''
+
 
 def determine_shape():
     pass
@@ -94,8 +129,7 @@ def put_block_in_trash(rexarm, gripper_angle):
 
     set_positions[4] = GRIPPER_OPEN
     rexarm.set_positions(set_positions, update_now = True)
-    time.sleep(1)
-
+    time.sleep(1)   
 
 def runToBlock(block_pose):
     pass
