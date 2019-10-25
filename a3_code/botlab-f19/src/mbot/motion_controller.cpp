@@ -71,9 +71,9 @@ public:
     {
         //////////// TODO: Implement your feedback controller here. //////////////////////
         
-        const float kPGain = 0.27f;
+        const float kPGain = 0.3f;
         const float kDGain = 0.0f;
-        const float kIGain = 0.0003f;
+        const float kIGain = 0.1f;
 
         const float kPTurnGain = 0.4f;
         const float kDesiredSpeed = 0.15f;
@@ -299,8 +299,8 @@ private:
 
     bool haveReachedTarget(void)
     {
-        const float kPosTolerance = 0.02f;
-	    const float kFinalPosTolerance = 0.02f;
+        const float kPosTolerance = 0.05f;
+	    const float kFinalPosTolerance = 0.05f;
 
         //tolerance for intermediate waypoints can be more lenient
     	float tolerance = (targets_.size() == 1) ? kFinalPosTolerance : kPosTolerance;

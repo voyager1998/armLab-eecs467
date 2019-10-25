@@ -24,8 +24,8 @@
 #ifdef MRC_VERSION_1v3
 #define MOT_EN                  0,20    // gpio0.20  P9.41
 #endif
-#define MOT_1_POL            1    // polarity of motor 1
-#define MOT_2_POL          -1    // polarity of motor 2
+#define MOT_1_POL            -1    // polarity of motor 1
+#define MOT_2_POL          1    // polarity of motor 2
 #define ENC_LEFT_POL           -1    // polarity of encoder 1
 #define ENC_RIGHT_POL          1    // polarity of encoder 2
 #define MOT_1_CS                0    // analog in of motor 1 current sense

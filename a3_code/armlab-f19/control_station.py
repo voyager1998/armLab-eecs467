@@ -178,11 +178,10 @@ class TaskThread(QThread):
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
             self.task5.begin_task(block_pose)
         elif self.task_num == 2:
-            print("Return to Home Pose!")
-            self.task1.begin_task(self.state_machine.rexarm.get_positions()[4])
+            print("Setting to snake pose")
+            set_snake(self.state_machine.rexarm)
         elif self.task_num == 3:
             print("Run and Pick!")
-            # self.state_machine.rexarm.get_positions()[4]
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
             self.runAndPick.begin_task(block_pose)
         elif self.task_num == 4:

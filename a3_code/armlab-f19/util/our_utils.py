@@ -52,21 +52,38 @@ def pick_1x1_block(rexarm, endpoint):
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
+    set_erect(rexarm)
+    time.sleep(2)
+    
+    set_snake(rexarm)
+    time.sleep(1)
+
+def set_erect(rexarm, gripper=None):
     # return home
+    set_positions = [0] * 5
     set_positions[0] = 0 * D2R
     set_positions[1] = 0 * D2R
     set_positions[2] = -90 * D2R
     set_positions[3] = 90 * D2R
+    if gripper is None:
+        set_positions[4] = rexarm.get_positions()[4]
+    else:
+        set_positions[4] = gripper
+
     rexarm.set_positions(set_positions, update_now = True)
-    time.sleep(2)
-    
-    # return home
+
+def set_snake(rexarm, gripper=None):
+    set_positions = [0] * 5
     set_positions[0] = 90 * D2R
     set_positions[1] = 90 * D2R
     set_positions[2] = -90 * D2R
     set_positions[3] = -90 * D2R
+    if gripper is None:
+        set_positions[4] = rexarm.get_positions()[4]
+    else:
+        set_positions[4] = gripper
+
     rexarm.set_positions(set_positions, update_now = True)
-    time.sleep(1)
 
 def determine_shape():
     pass
