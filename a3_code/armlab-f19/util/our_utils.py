@@ -76,15 +76,16 @@ def locate_1x1_block(tags, extrinsic_mtx):
 def euclidian_distance(pose1X, pose1Y, pose1Z, pose2X, pose2Y, pose2Z):
     return math.sqrt((pose1X - pose2X)**2 + (pose1Y - pose2Y)**2 + (pose1Z - pose2Z)**2)
 
-def is_long_block(tags, extrinsic_mtx):
+def has_double_tags(tags, extrinsic_mtx):
+
+    I2M = 0.0254
+    
     for tag in tags:
         for tag2 in tags:
             tag1Pose = from_AprilTag_to_pose(tag, extrinsic_mtx)
             tag2Pose = from_AprilTag_to_pose(tag2, extrinsic_mtx)
             if euclidian_distance(tag1Pose[0], tag1Pose[1], tag1Pose[2], tag2Pose[0], tag2Pose[1], tag2Pose[2]) < 1.5 * I2M):
-                return (tag1Pose, tag2Pose)
-    return None
-
-def 
+                return True
+    return False
 
     
