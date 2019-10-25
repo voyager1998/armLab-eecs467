@@ -29,7 +29,7 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
-from task3 import task3
+from runAndPick import runAndPick
 from util.our_utils import *
 
 
@@ -157,13 +157,12 @@ class TaskThread(QThread):
         self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
-        self.task3 = task3(state_machine)
+        self.runAndPick = runAndPick(state_machine)
 
     def run(self):
         while True:
             if self.task_num == 1:
                 pass
-                # self.task1.operate_task()
             elif self.task_num == 2:
                 pass
             elif self.task_num == 3:
@@ -175,14 +174,17 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("task5 pressed!")
+            print("Start picking block!")
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
             self.task5.begin_task(block_pose)
         elif self.task_num == 2:
             print("Return to Home Pose!")
             self.task1.begin_task(self.state_machine.rexarm.get_positions()[4])
         elif self.task_num == 3:
-            self.task3.begin_task(self.state_machine.rexarm.get_positions()[4])
+            print("Run and Pick!")
+            # self.state_machine.rexarm.get_positions()[4]
+            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            self.runAndPick.begin_task(block_pose)
         elif self.task_num == 4:
             pass
 

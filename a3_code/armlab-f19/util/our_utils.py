@@ -1,5 +1,13 @@
 import numpy as np
 import time
+import lcm
+from lcmtypes import pose_xyt_t
+from lcmtypes import occupancy_grid_t
+from lcmtypes import mbot_status_t
+from lcmtypes import mbot_command_t
+
+
+PICK_RANGE = 0.2
 
 D2R = 3.141592/180.0
 GRIPPER_OPEN = -60 * D2R
@@ -79,7 +87,7 @@ def locate_1x1_block(tags, extrinsic_mtx):
         pick_block_position = from_AprilTag_to_pose(tag, extrinsic_mtx)
     pick_block_position[3] = -45
     pick_block_position[0] = pick_block_position[0] - 0.01 # shift target 1 cm to the left
-    print("target pose: ", pick_block_position)
+    print("Block pose: ", pick_block_position)
     return pick_block_position
 
 def put_block_in_trash(rexarm, gripper_angle):
@@ -99,3 +107,9 @@ def put_block_in_trash(rexarm, gripper_angle):
 
 def runToBlock(block_pose):
     pass
+
+def run_and_pick_util(block_pose): # block_pose = [x, y, z]
+    if np.sqrt(block_pose[0]** 2 + block_pose[1]** 2) > PICK_RANGE:
+        pass
+    else:
+        pass

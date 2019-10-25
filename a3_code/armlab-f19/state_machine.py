@@ -139,16 +139,32 @@ class StateMachine():
         # Set the next state to be idle
         self.set_current_state("idle")
 
-    # def image_to_rex_pt(self, im_pt):
-
-
     def moving_arm(self):
         """TODO: Implement this function"""
         self.rexarm.send_commands()
 
-    def moving_mbot(self):
+    def moving_mbot(self, block_pose): # block_pose = [x, y, z]
         """TODO: Implement this function"""
-        self.publish_mbot_command(mbot_command_t.STATE_MOVING, (1, 1, 0), [(2,2,0), (1,3,0)])
+        if self.slam_pose == None:
+            self.slam_pose = [0, 0, 0]
+        # I re-wrote all this because i realized i needed to learn homogeneous coordinates for the exam.
+        # I used your original code to test that it's correct
+        mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
+                                    [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
+                                    [0,0,1,0],
+                                    [0,0,0,1]])
+        rex_to_mbot = np.array([[0, 1,0,0.1],
+                                [-1,0,0,0],
+                                [0, 0,1,0],
+                                [0, 0,0,1]])
+        block_pose = block_pose.flatten()[0:3].reshape((3,1))
+        block_pose = np.append(block_pose,[1])
+        # tar_x = self.slam_pose[0] + block_pose[0] * np.sin(self.slam_pose[2]) + block_pose[1] * np.cos(self.slam_pose[2])
+        # tar_y = self.slam_pose[1] + block_pose[1] * np.sin(self.slam_pose[2]) - block_pose[0] * np.cos(self.slam_pose[2])
+        tar_pose = mbot_to_world @ rex_to_mbot @ block_pose
+        tar_x, tar_y = tar_pose[0], tar_pose[1]
+        print("block pose in world:", tar_x, tar_y)
+        self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [])
 
 
     def slampose_feedback_handler(self, channel, data):
@@ -184,7 +200,7 @@ class StateMachine():
         if state == mbot_command_t.STATE_STOPPED:
             pass
         elif state == mbot_command_t.STATE_MOVING:
-            msg.goal_pose.x, msg.goal_pose.y, msg.goal_pose.theta = 1, 1, 1
+            msg.goal_pose.x, msg.goal_pose.y, msg.goal_pose.theta = goal_pose[0], goal_pose[1], goal_pose[2]
             msg.num_obstacles = len(obstacles)
             for i in range(msg.num_obstacles):
                 obs_pose = pose_xyt_t()
