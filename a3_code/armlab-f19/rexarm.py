@@ -159,11 +159,11 @@ class Rexarm():
         return self.move_fb
 
     def get_feedback(self):
-        self.get_positions()
-        self.get_speeds()
-        self.get_loads()
-        self.get_temps()
-        self.get_moving_status()
+        # self.get_positions()
+        # self.get_speeds()
+        # self.get_loads()
+        # self.get_temps()
+        # self.get_moving_status()
         pass
 
     def pause(self, secs):

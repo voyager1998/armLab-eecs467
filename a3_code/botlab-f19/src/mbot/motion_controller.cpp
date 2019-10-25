@@ -6,7 +6,6 @@
 #include <lcmtypes/robot_path_t.hpp>
 #include <lcmtypes/timestamp_t.hpp>
 #include <lcmtypes/message_received_t.hpp>
-#include <lcmtypes/mbot_command_t.hpp>
 #include <common/angle_functions.hpp>
 #include <common/pose_trace.hpp>
 #include <common/lcm_config.h>
@@ -17,6 +16,10 @@
 #include <cassert>
 #include <signal.h>
 
+#include <lcmtypes/mbot_command_t.hpp>
+
+using std::cout;
+using std::endl;
 
 float clamp_speed(float speed)
 {
@@ -68,14 +71,14 @@ public:
     {
         //////////// TODO: Implement your feedback controller here. //////////////////////
         
-        const float kPGain = 0.3f;
+        const float kPGain = 0.27f;
         const float kDGain = 0.0f;
-        const float kIGain = 0.1f;
+        const float kIGain = 0.0003f;
 
         const float kPTurnGain = 0.4f;
-        const float kDesiredSpeed = 0.2f;
+        const float kDesiredSpeed = 0.15f;
         const float kMinSpeed = 0.1f;
-        const float kTurnSpeed = 0.3f;
+        const float kTurnSpeed = 1.0f;
         const float kTurnMaxSpeed = 0.6f;
         const float slowDownDistance = 0.4f;
         
@@ -112,6 +115,7 @@ public:
 
             if(state_ == TURN)
             {
+                std::cout << "IM TURNING" << '\n';
                 if(std::abs(error) > 0.05) // turn in place until pointed approximately at the target
                 {
 
@@ -119,12 +123,12 @@ public:
 
                     float turnspeed = 0.0;
                     if (error > 0) {
-                        turnspeed = kTurnSpeed;
-                    } else {
                         turnspeed = -kTurnSpeed;
+                    } else {
+                        turnspeed = kTurnSpeed;
                     }
 
-                    /*if (std::abs(error) < 0.5) {
+                    if (std::abs(error) < 0.5) {
                         // kick in PID close to end
                         double deltaError = error - lastError_;
                         totalError_ += error;
@@ -132,11 +136,11 @@ public:
 
                         turnspeed = (error * kPGain) + (deltaError * kDGain) + (totalError_ * kIGain);
                         if (turnspeed >= 0) {
-                            turnspeed = std::min(turnspeed+0.0f, kTurnMaxSpeed);
+                            turnspeed = std::min(turnspeed, -kTurnMaxSpeed);
                         } else {
-                            turnspeed = std::max(-turnspeed-0.0f, -kTurnMaxSpeed);
+                            turnspeed = std::max(-turnspeed, kTurnMaxSpeed);
                         }
-                    }*/
+                    }
 
                     // Turn left if the target is to the left
                     if(error > 0.0)
@@ -164,6 +168,7 @@ public:
             }
             else if(state_ == DRIVE) // Use feedback to drive to the target once approximately pointed in the correct direction
             {
+                std::cout << "IM DRIVING" << '\n';
                 double speed = kDesiredSpeed;
 
                 float distToGoal = std::sqrt(std::pow(target.x - pose.x, 2.0f) + std::pow(target.y - pose.y, 2.0f));
@@ -180,7 +185,8 @@ public:
                 cmd.trans_v = speed;
 
                 //pid control the angular v based on angle error
-                cmd.angular_v = error * kPTurnGain;
+                cmd.angular_v = -(error * kPTurnGain);
+                // cout << "cmd.angular_v: " << cmd.angular_v << endl;
                 //angular velocity must not exceed 1.5 the desired turnspeed
                 if (cmd.angular_v >= 0.0) {
                     cmd.angular_v = std::min(std::abs(cmd.angular_v), kTurnMaxSpeed * 1.5f);
@@ -200,8 +206,8 @@ public:
     bool timesync_initialized(){ return timesync_initialized_; }
 
     void handleTimesync(const lcm::ReceiveBuffer* buf, const std::string& channel, const timestamp_t* timesync){
-        timesync_initialized_ = true;
-        time_offset = timesync->utime-utime_now();
+	timesync_initialized_ = true;
+	time_offset = timesync->utime-utime_now();
     }
     
     void handlePath(const lcm::ReceiveBuffer* buf, const std::string& channel, const robot_path_t* path)
@@ -225,7 +231,26 @@ public:
         //confirm that the path was received
         lcmInstance->publish(MESSAGE_CONFIRMATION_CHANNEL, &confirm);
     }
-    
+
+    void handleBlock(const lcm::ReceiveBuffer *buf, const std::string &channel, const mbot_command_t *block_pose_world)
+    {
+        std::vector<pose_xyt_t> temp;
+        temp.push_back(block_pose_world->goal_pose);
+        // temp.push_back(odomToGlobalFrame_);
+        pose_xyt_t start;
+        start.x = 0;
+        start.y = 0;
+        start.theta = 0;
+        temp.push_back(start);
+        targets_ = temp;
+
+        std::cout << "received new path at time: " << block_pose_world->utime << "\n";
+        std::cout << "received position of the block: " << (block_pose_world->goal_pose).x
+                  << ", " << (block_pose_world->goal_pose).y << std::endl;
+
+        assignNextTarget();
+    }
+
     void handleOdometry(const lcm::ReceiveBuffer* buf, const std::string& channel, const odometry_t* odometry)
     {
         /////// TODO: Implement your handler for new odometry data ////////////////////
@@ -241,28 +266,9 @@ public:
     void handlePose(const lcm::ReceiveBuffer* buf, const std::string& channel, const pose_xyt_t* pose)
     {
         /////// TODO: Implement your handler for new pose data ////////////////////    
-        // computeOdometryOffset(*pose);
+        computeOdometryOffset(*pose);
     }
-
-    void handleBlock(const lcm::ReceiveBuffer* buf, const std::string& channel, const mbot_command_t* block_pose_world)
-    {
-        std::vector<pose_xyt_t> temp;
-        temp.push_back(block_pose_world->goal_pose);
-        // temp.push_back(odomToGlobalFrame_);
-        pose_xyt_t start;
-        start.x = 0;
-        start.y = 0;
-        start.theta = 0;
-        temp.push_back(start);
-        targets_ = temp;
-
-        std::cout << "received new path at time: " << block_pose_world->utime << "\n";
-        std::cout << "received position of the block: " << (block_pose_world->goal_pose).x 
-        << ", " << (block_pose_world->goal_pose).y << std::endl;
-
-        assignNextTarget();
-    }
-
+    
 private:
     
     enum State
@@ -293,8 +299,8 @@ private:
 
     bool haveReachedTarget(void)
     {
-        const float kPosTolerance = 0.1f;
-	    const float kFinalPosTolerance = 0.05f;
+        const float kPosTolerance = 0.02f;
+	    const float kFinalPosTolerance = 0.02f;
 
         //tolerance for intermediate waypoints can be more lenient
     	float tolerance = (targets_.size() == 1) ? kFinalPosTolerance : kPosTolerance;
@@ -326,7 +332,7 @@ private:
         {
             targets_.pop_back();
         }
-        
+        cout << "entering TURN  state" << endl;
         // Reset all error terms when switching to a new target
         lastError_ = 0.0f;
         totalError_ = 0.0f;

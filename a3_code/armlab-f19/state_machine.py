@@ -147,8 +147,22 @@ class StateMachine():
         """TODO: Implement this function"""
         if self.slam_pose == None:
             self.slam_pose = [0, 0, 0]
-        tar_x = self.slam_pose[0] + block_pose[0] * np.sin(self.slam_pose[2]) + block_pose[1] * np.cos(self.slam_pose[2])
-        tar_y = self.slam_pose[1] + block_pose[1] * np.sin(self.slam_pose[2]) - block_pose[0] * np.cos(self.slam_pose[2])
+        # I re-wrote all this because i realized i needed to learn homogeneous coordinates for the exam.
+        # I used your original code to test that it's correct
+        mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
+                                    [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
+                                    [0,0,1,0],
+                                    [0,0,0,1]])
+        rex_to_mbot = np.array([[0, 1,0,0.1],
+                                [-1,0,0,0],
+                                [0, 0,1,0],
+                                [0, 0,0,1]])
+        block_pose = block_pose.flatten()[0:3].reshape((3,1))
+        block_pose = np.append(block_pose,[1])
+        # tar_x = self.slam_pose[0] + block_pose[0] * np.sin(self.slam_pose[2]) + block_pose[1] * np.cos(self.slam_pose[2])
+        # tar_y = self.slam_pose[1] + block_pose[1] * np.sin(self.slam_pose[2]) - block_pose[0] * np.cos(self.slam_pose[2])
+        tar_pose = mbot_to_world @ rex_to_mbot @ block_pose
+        tar_x, tar_y = tar_pose[0], tar_pose[1]
         print("block pose in world:", tar_x, tar_y)
         self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [])
 
