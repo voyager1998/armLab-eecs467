@@ -17,7 +17,7 @@ class pickup_1x1_block():
             self.state = 'grabbing'
         if self.state == 'grabbing':
             print("Start relocating the block and picking")
-            time.sleep(5)
+            time.sleep(8)
             new_location = locate_1x1_block(self.fsm.tags, self.fsm.extrinsic_mtx)
             print("block location received")
             time.sleep(1)

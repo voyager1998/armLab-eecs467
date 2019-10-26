@@ -80,8 +80,8 @@ class StateMachine():
 
         # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
         if (self.current_state in ['pickup_1x1_block']):
-            print("current state is pickup_1x1_block")
-            print("bot status:", self.mbot_status)
+            # print("current state is pickup_1x1_block")
+            # print("bot status:", self.mbot_status)
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
 
