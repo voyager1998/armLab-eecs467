@@ -153,7 +153,7 @@ class StateMachine():
                                     [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
                                     [0,0,1,0],
                                     [0,0,0,1]])
-        rex_to_mbot = np.array([[0, 1,0,0.1],
+        rex_to_mbot = np.array([[0, 1,0,-0.1],
                                 [-1,0,0,0],
                                 [0, 0,1,0],
                                 [0, 0,0,1]])
