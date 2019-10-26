@@ -173,6 +173,7 @@ class StateMachine():
         this is run when a feedback message is recieved
         """
         msg = pose_xyt_t.decode(data)
+        print(msg)
         self.slam_pose = (msg.x, msg.y, msg.theta)
 
     def mbotstatus_feedback_handler(self, channel, data):

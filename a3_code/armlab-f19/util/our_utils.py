@@ -120,10 +120,12 @@ def get_tag_positions(tags, extrinsic_mtx):
 
 def find_closest_block(tags, extrinsic_mtx):
     closest_pose = [9999, 9999]
+    closest_tag_id = -1
     for tag in tags:
         current_pose = from_AprilTag_to_pose(tag, extrinsic_mtx)
         if(euclidian_distance(closest_pose[0], closest_pose[1], 0, 0) > euclidian_distance(current_pose[0], current_pose[1], 0, 0)):
             closest_pose = current_pose
+            closest_tag_id = tag.tag_id
 
 
     robot_angle = np.array([0, 1])
@@ -132,7 +134,7 @@ def find_closest_block(tags, extrinsic_mtx):
     print("block_angle: ", block_angle)
     found_angle_cos = np.dot(robot_angle,block_angle)/np.linalg.norm(robot_angle)/np.linalg.norm(block_angle)
     angle = math.acos(found_angle_cos)
-    return -sign * angle
+    return (-sign * angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
 
 def put_block_in_trash(rexarm, gripper_angle):
     set_positions = [0]*5
