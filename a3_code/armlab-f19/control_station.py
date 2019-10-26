@@ -164,7 +164,7 @@ class TaskThread(QThread):
     def run(self):
         while True:
             if self.task_num == 1:
-                pass
+                pass #self.spin_state.operate_task(self.state_machine.tags)
             elif self.task_num == 2:
                 pass
             elif self.task_num == 3:
@@ -179,7 +179,7 @@ class TaskThread(QThread):
             #print("Start picking block!")
             #block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
             #self.task5.begin_task(block_pose)
-            self.spin_state.begin_task(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            self.spin_state.begin_task()
         elif self.task_num == 2:
             print("Setting to snake pose")
             set_snake(self.state_machine.rexarm)

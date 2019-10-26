@@ -131,7 +131,6 @@ def find_closest_block(tags, extrinsic_mtx):
     robot_angle = np.array([0, 1])
     block_angle = np.array([closest_pose[0], closest_pose[1]])
     sign = np.sign(closest_pose[0])
-    print("block_angle: ", block_angle)
     found_angle_cos = np.dot(robot_angle,block_angle)/np.linalg.norm(robot_angle)/np.linalg.norm(block_angle)
     angle = math.acos(found_angle_cos)
     return (-sign * angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
