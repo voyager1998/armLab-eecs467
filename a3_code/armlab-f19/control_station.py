@@ -29,7 +29,6 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
-from runAndPick import runAndPick
 from util.our_utils import *
 
 
@@ -157,7 +156,6 @@ class TaskThread(QThread):
         self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
-        self.runAndPick = runAndPick(state_machine)
 
     def run(self):
         while True:
@@ -182,8 +180,7 @@ class TaskThread(QThread):
             set_snake(self.state_machine.rexarm)
         elif self.task_num == 3:
             print("Run and Pick!")
-            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
-            self.runAndPick.begin_task(block_pose)
+            self.state_machine.set_current_state('pickup_1x1_block')
         elif self.task_num == 4:
             pass
 
@@ -322,6 +319,7 @@ class Gui(QMainWindow):
 
     @pyqtSlot(list)
     def updateAprilTags(self, tags):
+        print('UPDATING APRIL TAGS')
         self.sm.tags = tags
 
     @pyqtSlot(list)

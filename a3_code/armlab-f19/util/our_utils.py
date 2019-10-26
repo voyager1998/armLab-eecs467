@@ -11,6 +11,7 @@ PICK_RANGE = 0.2
 
 D2R = 3.141592/180.0
 GRIPPER_OPEN = -60 * D2R
+I2M = 0.0254
 
 def rot_tran_to_homo(rotation_matrix, tvec):
     extrinsic = np.append(rotation_matrix, tvec, axis=1)
@@ -89,7 +90,6 @@ def determine_shape():
     pass
 
 def from_AprilTag_to_pose(tag, extrinsic_mtx):
-    I2M = 0.0254
     # pose_t is the x,y,z of the center of the tag in camera frame
     pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
     block_to_rex = np.dot(extrinsic_mtx, pose_homo)
@@ -98,7 +98,6 @@ def from_AprilTag_to_pose(tag, extrinsic_mtx):
 
 
 def locate_1x1_block(tags, extrinsic_mtx):
-    I2M = 0.0254
     pick_block_position = [0, 3*I2M, I2M/2, -90]
     for tag in tags:
         pick_block_position = from_AprilTag_to_pose(tag, extrinsic_mtx)

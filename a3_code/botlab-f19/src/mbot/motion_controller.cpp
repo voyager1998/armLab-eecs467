@@ -17,6 +17,7 @@
 #include <signal.h>
 
 #include <lcmtypes/mbot_command_t.hpp>
+#include <lcmtypes/mbot_status_t.hpp>
 
 using std::cout;
 using std::endl;
@@ -96,6 +97,10 @@ public:
             
             if(!haveTarget)
             {
+                mbot_status_t msg;
+                msg.status = msg.STATUS_COMPLETE;
+                msg.utime = now();
+                lcmInstance->publish(MBOT_STATUS_CHANNEL, &msg);
                 std::cout << "COMPLETED PATH!\n";
             }
         }
@@ -213,6 +218,10 @@ public:
     void handlePath(const lcm::ReceiveBuffer* buf, const std::string& channel, const robot_path_t* path)
     {
         /////// TODO: Implement your handler for new paths here ////////////////////
+        mbot_status_t msg;
+        msg.status = msg.STATUS_IN_PROGRESS;
+        msg.utime = now();
+        lcmInstance->publish(MBOT_STATUS_CHANNEL, &msg);
 
         targets_ = path->path;
         std::reverse(targets_.begin(), targets_.end()); // store first at back to allow for easy pop_back()

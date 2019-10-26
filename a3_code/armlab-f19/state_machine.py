@@ -12,6 +12,7 @@ from lcmtypes import occupancy_grid_t
 from lcmtypes import mbot_status_t
 from lcmtypes import mbot_command_t
 from util.our_utils import *
+from pickup_1x1_block import pickup_1x1_block
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
@@ -47,8 +48,13 @@ class StateMachine():
         # extrinsic_mtx translates from points in camera frame to world frame
         self.extrinsic_mtx = np.linalg.inv(rot_tran_to_homo(rotation_matrix, tvec))
 
+        self.mbot_status = mbot_status_t.STATUS_COMPLETE
+        self.pickup_1x1_block = pickup_1x1_block(self)
+
     def set_current_state(self, state):
         self.current_state = state
+        state_obj = getattr(self, state)
+        state_obj.begin_task()
 
     """ This function is run continuously in a thread"""
 
@@ -70,6 +76,11 @@ class StateMachine():
 
         if(self.current_state == "moving_mbot"):
             self.moving_mbot()
+
+        # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
+        if(self.current_state in ['pickup_1x1_block']):
+            state_obj = getattr(self, self.current_state)
+            state_obj.operate_task()
 
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
@@ -104,7 +115,6 @@ class StateMachine():
         distortionCoeff = np.array([ 0.33714855, -1.52702923,  0.01138424,  0.00398338,  2.62973717])
                                 
         # 3D coordinates of the center of AprilTags in the arm frame in meters.
-        I2M = 0.0254
         # To calibrate, form a square of cubes 8 inches from the front roller that looks like this
         # 34
         # 56
@@ -165,6 +175,7 @@ class StateMachine():
         tar_x, tar_y = tar_pose[0], tar_pose[1]
         print("block pose in world:", tar_x, tar_y)
         self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [])
+        return (tar_x, tar_y)
 
 
     def slampose_feedback_handler(self, channel, data):
@@ -181,6 +192,7 @@ class StateMachine():
         this is run when a feedback message is recieved
         """
         msg = mbot_status_t.decode(data)
+        self.mbot_status = msg.status
 
     def get_mbot_feedback(self):
         """
