@@ -65,6 +65,9 @@ class spin_state():
             print("target angle:", normalizedAngle)
             self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (self.fsm.slam_pose[0], self.fsm.slam_pose[1], normalizedAngle), [])
             tags = self.fsm.tags
+            if(find_closest_block(tags, extrinsic_mtx) == None):
+                i += self.PI/4
+                continue
             closest_at_angle = find_closest_block(tags, extrinsic_mtx)
             # print(closest_at_angle[0])
             if(closest_distance > closest_at_angle[1]):
@@ -77,7 +80,9 @@ class spin_state():
         self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (self.fsm.slam_pose[0], self.fsm.slam_pose[1], closest_angle), [])
 
         print("closest angle: ", closest_angle)
-        if(closest_tag_number == 1):
+        if(closest_tag_number == -1):
+            print("No blocks found")
+        elif(closest_tag_number == 1):
             print("long block")
         #else if ()
         

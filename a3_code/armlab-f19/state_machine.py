@@ -13,6 +13,7 @@ from lcmtypes import mbot_status_t
 from lcmtypes import mbot_command_t
 from util.our_utils import *
 from pickup_1x1_block import pickup_1x1_block
+from pickup_3x1_block import pickup_3x1_block
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
@@ -50,6 +51,7 @@ class StateMachine():
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)
+        self.pickup_3x1_block = pickup_3x1_block(self)
 
     def set_current_state(self, state):
         self.current_state = state
@@ -79,8 +81,8 @@ class StateMachine():
             pass
 
         # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
-        if (self.current_state in ['pickup_1x1_block']):
-            print("current state is pickup_1x1_block")
+        if (self.current_state in ['pickup_1x1_block', 'pickup_3x1_block']):
+            print("current state is ", self.current_state)
             print("bot status:", self.mbot_status)
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()

@@ -60,6 +60,7 @@ def pick_1x1_block(rexarm, endpoint):
     set_snake(rexarm)
     time.sleep(1)
 
+
 def set_erect(rexarm, gripper=None):
     # return home
     set_positions = [0] * 5
@@ -97,11 +98,38 @@ def from_AprilTag_to_pose(tag, extrinsic_mtx):
     tag_pose_world = np.dot(block_to_rex, np.array([0, 0, I2M / 2, 1])).reshape(4,)
     return tag_pose_world
 
+def knock_back(initial_position, rexarm):
+    print("begin picking up 1x1 block!")
+    #Get to block
+    for phi in range(-20, -91, -10):
+        initial_position[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+        if joint_positions_endpoint != None:
+            break
+
+    set_positions = [0] * 5
+    set_positions[4] = 20 # closed gripper
+
+    set_positions[0] = joint_positions_endpoint[0]
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+    for i in range(len(joint_positions_endpoint) - 1, 0, -1):
+        set_positions[i] = joint_positions_endpoint[i]
+        rexarm.set_positions(set_positions, update_now = True)
+        time.sleep(1)
+        
+    '''
+    while set_positions[3] > 0:
+        set_positions[3] = set_positions - 10
+        rexarm.set_positions(set_positions, update_now = True)
+        time.sleep(1)
+    '''
+
 
 def locate_1x1_block(tags, extrinsic_mtx):
     pick_block_position = [0, 3*I2M, I2M/2, -90]
     for tag in tags:
-        pick_block_position = from_AprilTag_to_pose(tag, extrinsic_mtx)
+        pick_block_position = from_AprilTag_to_pose(tag, extrinsic_mtx, offset)
     pick_block_position[3] = -45
     pick_block_position[0] = pick_block_position[0] - 0.01 # shift target 1 cm to the left
     print("Block pose: ", pick_block_position)
@@ -149,9 +177,11 @@ def find_closest_block(tags, extrinsic_mtx):
         if(euclidian_distance(closest_pose[0], closest_pose[1], 0, 0) > euclidian_distance(current_pose[0], current_pose[1], 0, 0)):
             closest_pose = current_pose
             closest_tag_id = tag.tag_id
+    if(closest_tag_id == -1):
+        return None
     robot_angle = np.array([0, 1])
     block_angle = np.array([closest_pose[0], closest_pose[1]])
     sign = np.sign(closest_pose[0])
     found_angle_cos = np.dot(robot_angle,block_angle)/np.linalg.norm(robot_angle)/np.linalg.norm(block_angle)
     angle = math.acos(found_angle_cos)
-    return (-sign * angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
+    return [-sign * angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id]
