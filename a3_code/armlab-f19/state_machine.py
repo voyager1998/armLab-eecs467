@@ -75,10 +75,13 @@ class StateMachine():
             self.moving_arm()
 
         if(self.current_state == "moving_mbot"):
-            self.moving_mbot()
+            # self.moving_mbot()
+            pass
 
         # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
-        if(self.current_state in ['pickup_1x1_block']):
+        if (self.current_state in ['pickup_1x1_block']):
+            print("current state is pickup_1x1_block")
+            print("bot status:", self.mbot_status)
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
 
@@ -162,8 +165,9 @@ class StateMachine():
         mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
                                     [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
                                     [0,0,1,0],
-                                    [0,0,0,1]])
-        rex_to_mbot = np.array([[0, 1,0,-0.1],
+                                    [0, 0, 0, 1]])
+        DIST_TO_BLOCK = 0.07
+        rex_to_mbot = np.array([[0, 1,0,-DIST_TO_BLOCK],
                                 [-1,0,0,0],
                                 [0, 0,1,0],
                                 [0, 0,0,1]])
@@ -184,6 +188,7 @@ class StateMachine():
         this is run when a feedback message is recieved
         """
         msg = pose_xyt_t.decode(data)
+        # print("new slam pose received:", msg.x, msg.y)
         self.slam_pose = (msg.x, msg.y, msg.theta)
 
     def mbotstatus_feedback_handler(self, channel, data):
@@ -191,7 +196,9 @@ class StateMachine():
         Feedback Handler for mbot status
         this is run when a feedback message is recieved
         """
+        print("hahaha")
         msg = mbot_status_t.decode(data)
+        print("new status received:", msg.status)
         self.mbot_status = msg.status
 
     def get_mbot_feedback(self):

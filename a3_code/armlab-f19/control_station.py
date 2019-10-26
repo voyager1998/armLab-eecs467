@@ -319,7 +319,7 @@ class Gui(QMainWindow):
 
     @pyqtSlot(list)
     def updateAprilTags(self, tags):
-        print('UPDATING APRIL TAGS')
+        # print('UPDATING APRIL TAGS')
         self.sm.tags = tags
 
     @pyqtSlot(list)
