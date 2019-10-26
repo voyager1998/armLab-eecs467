@@ -85,7 +85,11 @@ def set_snake(rexarm, gripper=None):
 
     rexarm.set_positions(set_positions, update_now = True)
 
-def determine_shape():
+def determine_shape(tag, map, extrinsic_mtx, ):
+    if (tag.tag_id == 1):
+        print("This is a long block.")
+    else:
+        pass
     pass
 
 def from_AprilTag_to_pose(tag, extrinsic_mtx):

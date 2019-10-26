@@ -34,12 +34,15 @@ class StateMachine():
 
         lcmMbotStatusSub = self.lc.subscribe("MBOT_STATUS", self.mbotstatus_feedback_handler)
 
+        lcmSLAMMapSub = self.lc.subscribe("SLAM_MAP", self.map_feedback_handler)
+
         # TODO: Add more variables here, such as RBG/HSV image here.
         self.current_step = 0
         self.path = []
         self.start_time = 0
         self.duration = 0
         self.slam_pose = None
+        self.occu_map = None
         rotation_matrix = [[ 0.99995118,  0.00709628, -0.00687564],
         [-0.00444373, -0.29853831, -0.95438731],
         [-0.00882524,  0.95437127, -0.2984922 ]]
@@ -182,6 +185,10 @@ class StateMachine():
         """
         msg = mbot_status_t.decode(data)
 
+    def map_feedback_handler(self, channel, data):
+        print("Occupancy Grid received!")
+        self.occu_map = occupancy_grid_t.decode(data)
+        
     def get_mbot_feedback(self):
         """
         LCM Handler function
