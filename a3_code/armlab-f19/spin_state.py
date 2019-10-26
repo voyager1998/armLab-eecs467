@@ -62,11 +62,11 @@ class spin_state():
         i = 0
         while i <= self.PI*2:
             normalizedAngle = self.normalize_angle(i)
-            print("why?: ", normalizedAngle)
+            print("target angle:", normalizedAngle)
             self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (self.fsm.slam_pose[0], self.fsm.slam_pose[1], normalizedAngle), [])
             tags = self.fsm.tags
             closest_at_angle = find_closest_block(tags, extrinsic_mtx)
-            print(closest_at_angle[0])
+            # print(closest_at_angle[0])
             if(closest_distance > closest_at_angle[1]):
                 closest_tag = closest_at_angle[2]
                 closest_angle = closest_at_angle[0]
