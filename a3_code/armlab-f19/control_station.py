@@ -30,6 +30,7 @@ from apriltags3 import Detector
 from task1 import task1
 from task5 import task5
 from runAndPick import runAndPick
+from spin_state import spin_state
 from util.our_utils import *
 
 
@@ -158,6 +159,7 @@ class TaskThread(QThread):
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
         self.runAndPick = runAndPick(state_machine)
+        self.spin_state = spin_state(state_machine)
 
     def run(self):
         while True:
@@ -174,9 +176,10 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("Start picking block!")
-            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
-            self.task5.begin_task(block_pose)
+            #print("Start picking block!")
+            #block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            #self.task5.begin_task(block_pose)
+            self.spin_state.begin_task(self.state_machine.tags, self.state_machine.extrinsic_mtx)
         elif self.task_num == 2:
             print("Setting to snake pose")
             set_snake(self.state_machine.rexarm)
@@ -409,7 +412,6 @@ class Gui(QMainWindow):
             # self.ui.rdoutRGB.setText("({},{},{})".format(*rgb))
             # self.ui.rdoutRGB.setText("({},{},{})".format(*hsv))
             self.ui.rdoutRGB.setText(self.hue_to_classification(hsv[0]))
-            print(hsv[0])
     
     # might do kmeans later so figured we might as well do the distance thing now
     def hue_to_classification(self, hue):

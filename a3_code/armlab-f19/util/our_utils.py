@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import lcm
+import math
 from lcmtypes import pose_xyt_t
 from lcmtypes import occupancy_grid_t
 from lcmtypes import mbot_status_t
@@ -85,6 +86,11 @@ def set_snake(rexarm, gripper=None):
 
     rexarm.set_positions(set_positions, update_now = True)
 
+def euclidian_distance(pose1_x, pose1_y, pose2_x, pose2_y):
+    print(pose1_x, pose2_x, pose1_y, pose2_y)
+    return math.sqrt((pose1_x - pose2_x)**2 + (pose1_y - pose2_y)**2)
+
+
 def determine_shape():
     pass
 
@@ -106,6 +112,27 @@ def locate_1x1_block(tags, extrinsic_mtx):
     pick_block_position[0] = pick_block_position[0] - 0.01 # shift target 1 cm to the left
     print("Block pose: ", pick_block_position)
     return pick_block_position
+
+def get_tag_positions(tags, extrinsic_mtx):
+    tag_poses = []
+    for tag in tags:
+        tag_poses.append(from_AprilTag_to_pose(tag, extrinsic_mtx))
+    return tag_poses
+
+def find_closest_block(tags, extrinsic_mtx):
+    closest_pose = [0, 0]
+    for tag in tags:
+        current_pose = from_AprilTag_to_pose(tag, extrinsic_mtx)
+        if(euclidian_distance(closest_pose[0], closest_pose[1], 0, 0) < euclidian_distance(current_pose[0], current_pose[1], 0, 0)):
+            closest_pose = current_pose
+
+    robot_angle = np.array([0, 1])
+    block_angle = np.array([closest_pose[0], closest_pose[1]])
+    print("closest_pose: ", closest_pose[0])
+    sign = np.sign(closest_pose[0])
+    found_angle_cos = np.dot(robot_angle,block_angle)/np.linalg.norm(robot_angle)/np.linalg.norm(block_angle)
+    angle = math.acos(found_angle_cos)
+    return -sign * angle
 
 def put_block_in_trash(rexarm, gripper_angle):
     set_positions = [0]*5
