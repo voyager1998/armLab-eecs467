@@ -115,7 +115,7 @@ public:
             
             double targetHeading = std::atan2(target.y - pose.y, target.x - pose.x);
             double error = angle_diff(targetHeading, pose.theta);
-            std::cout << "targetHeading: " << targetHeading << ", pose Theta: " << pose.theta << std::endl;
+            std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
             std::cout << "Angle error:" << error << '\n';
 
             if(state_ == TURN)
@@ -198,7 +198,7 @@ public:
                 } else {
                     cmd.angular_v = -std::min(std::abs(cmd.angular_v), kTurnMaxSpeed * 1.5f);
                 }
-		}
+            }
             else
             {
                 std::cerr << "ERROR: MotionController: Entered unknown state: " << state_ << '\n';
@@ -241,21 +241,18 @@ public:
         lcmInstance->publish(MESSAGE_CONFIRMATION_CHANNEL, &confirm);
     }
 
-    void handleBlock(const lcm::ReceiveBuffer *buf, const std::string &channel, const mbot_command_t *block_pose_world)
-    {
+    void handleBlock(const lcm::ReceiveBuffer* buf, const std::string& channel, const mbot_command_t* block_pose_world) {
         std::vector<pose_xyt_t> temp;
         temp.push_back(block_pose_world->goal_pose);
         // temp.push_back(odomToGlobalFrame_);
-        pose_xyt_t start;
-        start.x = 0;
-        start.y = 0;
-        start.theta = 0;
+        pose_xyt_t start = currentPose();
         temp.push_back(start);
         targets_ = temp;
 
         std::cout << "received new path at time: " << block_pose_world->utime << "\n";
         std::cout << "received position of the block: " << (block_pose_world->goal_pose).x
-                  << ", " << (block_pose_world->goal_pose).y << std::endl;
+                  << ", " << (block_pose_world->goal_pose).y << ", "
+                  << (block_pose_world->goal_pose).theta << std::endl;
 
         assignNextTarget();
     }
