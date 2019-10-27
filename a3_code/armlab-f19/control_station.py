@@ -29,11 +29,11 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
-from util.our_utils import rot_tran_to_homo
+from spin_state import spin_state
+from util.our_utils import *
 
 
 """ Radians to/from  Degrees conversions """
-D2R = 3.141592/180.0
 R2D = 180.0/3.141592
 #pixel Positions of image in GUI
 MIN_X = 240
@@ -68,7 +68,7 @@ class VideoThread(QThread):
         self.camera.awb_mode = 'off'
         # TODO: Use fixed awb_gains values instead of
         # using some random initialized value.
-        self.camera.awb_gains = g
+        self.camera.awb_gains = (291/256, 469/256)
         
         self.rawCapture = PiRGBArray(self.camera, size=(640,480))
         self.detector = Detector("tagStandard41h12", quad_decimate=2.0, quad_sigma=1.0, debug=False)
@@ -157,11 +157,12 @@ class TaskThread(QThread):
         self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
+        self.spin_state = spin_state(state_machine)
 
     def run(self):
         while True:
             if self.task_num == 1:
-                self.task1.operate_task()
+                pass
             elif self.task_num == 2:
                 pass
             elif self.task_num == 3:
@@ -173,25 +174,18 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("task5 pressed!")
-            I2M = 0.0254
-            pose_block_position = [0, 3*I2M, I2M/2, -90]
-            put_block_position = [-1*I2M/2, 6*I2M, I2M/2, -70]
-            for tag in self.state_machine.tags:
-                # pose_t is the x,y,z of the center of the tag in camera frame
-                pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
-
-                block_to_rex = np.dot(self.state_machine.extrinsic_mtx, pose_homo)
-                pose_block_position = np.dot(block_to_rex, np.array([0,0,I2M/2,1])).reshape(4,)
-            pose_block_position[3] = -40
-            pose_block_position[0] = pose_block_position[0] - 0.01 # shift target 1 cm to the left
-            print("target pose: ", pose_block_position)
-            self.task5.begin_task(pose_block_position, put_block_position, D2R)
+            print("Start picking block!")
+            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            self.task5.begin_task(block_pose)
         elif self.task_num == 2:
-            pass
+            # print("Setting to snake pose")
+            # set_snake(self.state_machine.rexarm)
+            self.state_machine.set_current_state('pickup_1x1_block')
+            # self.spin_state.begin_task()
         elif self.task_num == 3:
-            pass
-        elif self.task_num == 5:
+            print("Run and Pick!")
+            self.state_machine.set_current_state("send_to_garbage")
+        elif self.task_num == 4:
             pass
 
 class DisplayThread(QThread):
@@ -257,6 +251,8 @@ class Gui(QMainWindow):
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_current_state, "calibrate"))
 
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
+        self.ui.btn_task2.clicked.connect(partial(self.taskThread.set_task_num, 2))
+        self.ui.btn_task3.clicked.connect(partial(self.taskThread.set_task_num, 3))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
@@ -327,6 +323,7 @@ class Gui(QMainWindow):
 
     @pyqtSlot(list)
     def updateAprilTags(self, tags):
+        # print('UPDATING APRIL TAGS')
         self.sm.tags = tags
 
     @pyqtSlot(list)

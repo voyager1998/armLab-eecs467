@@ -2,7 +2,7 @@ import numpy as np
 from util.our_utils import *
 
 # sample structure for a complex task
-class task1():
+class runAndPick():
     def __init__(self, fsm):
         self.fsm = fsm
         self.current_step = 0
@@ -11,7 +11,7 @@ class task1():
         """TODO"""
         pass
 
-    def begin_task(self, gripper_angle):
-        return_home(self.fsm.rexarm, gripper_angle)
-
+    def begin_task(self, block_pose):
+        self.fsm.moving_mbot(block_pose)
+        pass
 

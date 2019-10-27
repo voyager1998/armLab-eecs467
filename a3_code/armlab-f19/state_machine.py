@@ -11,7 +11,13 @@ from lcmtypes import pose_xyt_t
 from lcmtypes import occupancy_grid_t
 from lcmtypes import mbot_status_t
 from lcmtypes import mbot_command_t
-from util.our_utils import rot_tran_to_homo
+from util.our_utils import *
+from pickup_1x1_block import pickup_1x1_block
+from pickup_3x1_block import pickup_3x1_block
+from pickup_corner_block import pickup_corner_block
+from travel_square import travel_square
+from spin_state import spin_state
+from send_to_garbage import send_to_garbage
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
@@ -47,8 +53,18 @@ class StateMachine():
         # extrinsic_mtx translates from points in camera frame to world frame
         self.extrinsic_mtx = np.linalg.inv(rot_tran_to_homo(rotation_matrix, tvec))
 
+        self.mbot_status = mbot_status_t.STATUS_COMPLETE
+        self.pickup_1x1_block = pickup_1x1_block(self)
+        self.pickup_3x1_block = pickup_3x1_block(self)
+        self.pickup_corner_block = pickup_corner_block(self)
+        self.travel_square = travel_square(self)
+        self.spin_state = spin_state(self)
+        self.send_to_garbage = send_to_garbage(self, travel_square)
+
     def set_current_state(self, state):
         self.current_state = state
+        state_obj = getattr(self, state)
+        state_obj.begin_task()
 
     """ This function is run continuously in a thread"""
 
@@ -69,7 +85,15 @@ class StateMachine():
             self.moving_arm()
 
         if(self.current_state == "moving_mbot"):
-            self.moving_mbot()
+            # self.moving_mbot()
+            pass
+
+        # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
+        if (self.current_state in ['pickup_1x1_block', 'spin_state', 'pickup_3x1_block', 'pickup_corner_block', 'travel_square', 'send_to_garbage']):
+            print("current state is ", self.current_state)
+            print("bot status:", self.mbot_status)
+            state_obj = getattr(self, self.current_state)
+            state_obj.operate_task()
 
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
@@ -104,13 +128,12 @@ class StateMachine():
         distortionCoeff = np.array([ 0.33714855, -1.52702923,  0.01138424,  0.00398338,  2.62973717])
                                 
         # 3D coordinates of the center of AprilTags in the arm frame in meters.
-        I2M = 0.0254
         # To calibrate, form a square of cubes 8 inches from the front roller that looks like this
         # 34
         # 56
         # (order matters!!!! from bottom to top)
         objectPoints = np.array([[-1*I2M/2, 6*I2M, I2M/2*3],
-                                [1*I2M / 2, 6*I2M, I2M / 2* 3],
+                                [1*I2M / 2, 6*I2M, I2M/2*3],
                                 [-1*I2M/2, 6*I2M, I2M/2],
                                 [1*I2M/2, 6*I2M, I2M/2]])
 
@@ -126,7 +149,7 @@ class StateMachine():
         # TODO: implement the function that transform pose_t of the tag to the arm's
         # frame of reference.
         # Update extrinsic_mtx but DONT persist it
-        self.extrinsic_mtx = np.linalg.inv(self.rot_tran_to_homo(rotation_matrix, tvec))
+        self.extrinsic_mtx = np.linalg.inv(rot_tran_to_homo(rotation_matrix, tvec))
         for tag in self.tags:
             # pose_t is the x,y,z of the center of the tag in camera frame
             pose_t = np.append(tag.pose_t,[1]).reshape((4,1))
@@ -139,16 +162,38 @@ class StateMachine():
         # Set the next state to be idle
         self.set_current_state("idle")
 
-    # def image_to_rex_pt(self, im_pt):
-
-
     def moving_arm(self):
         """TODO: Implement this function"""
         self.rexarm.send_commands()
 
-    def moving_mbot(self):
+    def moving_mbot(self, target_pose_world, is_mode_spin):
+        self.publish_mbot_command(mbot_command_t.STATE_MOVING,
+                (target_pose_world[0], target_pose_world[1], target_pose_world[2]), [], is_mode_spin)
+
+    def moving_mbot_to_block(self, block_pose): # block_pose = [x, y, z] is the block pose in arm frame
         """TODO: Implement this function"""
-        self.publish_mbot_command(mbot_command_t.STATE_MOVING, (1, 1, 0), [(2,2,0), (1,3,0)])
+        if self.slam_pose == None:
+            self.slam_pose = [0, 0, 0]
+        # I re-wrote all this because i realized i needed to learn homogeneous coordinates for the exam.
+        # I used your original code to test that it's correct
+        mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
+                                    [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
+                                    [0,0,1,0],
+                                    [0, 0, 0, 1]])
+        DIST_TO_BLOCK = 0.07
+        rex_to_mbot = np.array([[0, 1,0,-DIST_TO_BLOCK],
+                                [-1,0,0,0],
+                                [0, 0,1,0],
+                                [0, 0,0,1]])
+        block_pose = block_pose.flatten()[0:3].reshape((3,1))
+        block_pose = np.append(block_pose,[1])
+        # tar_x = self.slam_pose[0] + block_pose[0] * np.sin(self.slam_pose[2]) + block_pose[1] * np.cos(self.slam_pose[2])
+        # tar_y = self.slam_pose[1] + block_pose[1] * np.sin(self.slam_pose[2]) - block_pose[0] * np.cos(self.slam_pose[2])
+        tar_pose = mbot_to_world @ rex_to_mbot @ block_pose
+        tar_x, tar_y = tar_pose[0], tar_pose[1]
+        print("block pose in world:", tar_x, tar_y)
+        self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [], 0)
+        return (tar_x, tar_y)
 
 
     def slampose_feedback_handler(self, channel, data):
@@ -157,6 +202,7 @@ class StateMachine():
         this is run when a feedback message is recieved
         """
         msg = pose_xyt_t.decode(data)
+        # print("new slam pose received:", msg.x, msg.y)
         self.slam_pose = (msg.x, msg.y, msg.theta)
 
     def mbotstatus_feedback_handler(self, channel, data):
@@ -164,7 +210,10 @@ class StateMachine():
         Feedback Handler for mbot status
         this is run when a feedback message is recieved
         """
+        # print("hahaha")
         msg = mbot_status_t.decode(data)
+        # print("new status received:", msg.status)
+        self.mbot_status = msg.status
 
     def get_mbot_feedback(self):
         """
@@ -173,18 +222,19 @@ class StateMachine():
         """
         self.lc.handle_timeout(10)
 
-    def publish_mbot_command(self, state, goal_pose, obstacles):
+    def publish_mbot_command(self, state, goal_pose, obstacles, is_mode_spin):
         """
         Publishes mbot command.
         """
         msg = mbot_command_t()
         msg.utime = int(time.time() * 1e6)
         msg.state = state
+        msg.is_mode_spin = is_mode_spin
 
         if state == mbot_command_t.STATE_STOPPED:
             pass
         elif state == mbot_command_t.STATE_MOVING:
-            msg.goal_pose.x, msg.goal_pose.y, msg.goal_pose.theta = 1, 1, 1
+            msg.goal_pose.x, msg.goal_pose.y, msg.goal_pose.theta = goal_pose[0], goal_pose[1], goal_pose[2]
             msg.num_obstacles = len(obstacles)
             for i in range(msg.num_obstacles):
                 obs_pose = pose_xyt_t()

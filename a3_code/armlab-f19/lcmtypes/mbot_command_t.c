@@ -7,9 +7,9 @@
 #include "mbot_command_t.h"
 
 static int __mbot_command_t_hash_computed;
-static int64_t __mbot_command_t_hash;
+static uint64_t __mbot_command_t_hash;
 
-int64_t __mbot_command_t_hash_recursive(const __lcm_hash_ptr *p)
+uint64_t __mbot_command_t_hash_recursive(const __lcm_hash_ptr *p)
 {
     const __lcm_hash_ptr *fp;
     for (fp = p; fp != NULL; fp = fp->parent)
@@ -18,11 +18,12 @@ int64_t __mbot_command_t_hash_recursive(const __lcm_hash_ptr *p)
 
     __lcm_hash_ptr cp;
     cp.parent =  p;
-    cp.v = (void*)__mbot_command_t_get_hash;
+    cp.v = __mbot_command_t_get_hash;
     (void) cp;
 
-    int64_t hash = (int64_t)0xe884f1c967e65792LL
+    uint64_t hash = (uint64_t)0x75344374abf3c6b9LL
          + __int64_t_hash_recursive(&cp)
+         + __int8_t_hash_recursive(&cp)
          + __int8_t_hash_recursive(&cp)
          + __pose_xyt_t_hash_recursive(&cp)
          + __int32_t_hash_recursive(&cp)
@@ -35,7 +36,7 @@ int64_t __mbot_command_t_hash_recursive(const __lcm_hash_ptr *p)
 int64_t __mbot_command_t_get_hash(void)
 {
     if (!__mbot_command_t_hash_computed) {
-        __mbot_command_t_hash = __mbot_command_t_hash_recursive(NULL);
+        __mbot_command_t_hash = (int64_t)__mbot_command_t_hash_recursive(NULL);
         __mbot_command_t_hash_computed = 1;
     }
 
@@ -44,11 +45,15 @@ int64_t __mbot_command_t_get_hash(void)
 
 int __mbot_command_t_encode_array(void *buf, int offset, int maxlen, const mbot_command_t *p, int elements)
 {
-    int pos = 0, thislen, element;
+    int pos = 0, element;
+    int thislen;
 
     for (element = 0; element < elements; element++) {
 
         thislen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &(p[element].utime), 1);
+        if (thislen < 0) return thislen; else pos += thislen;
+
+        thislen = __int8_t_encode_array(buf, offset + pos, maxlen - pos, &(p[element].is_mode_spin), 1);
         if (thislen < 0) return thislen; else pos += thislen;
 
         thislen = __int8_t_encode_array(buf, offset + pos, maxlen - pos, &(p[element].state), 1);
@@ -88,6 +93,8 @@ int __mbot_command_t_encoded_array_size(const mbot_command_t *p, int elements)
 
         size += __int64_t_encoded_array_size(&(p[element].utime), 1);
 
+        size += __int8_t_encoded_array_size(&(p[element].is_mode_spin), 1);
+
         size += __int8_t_encoded_array_size(&(p[element].state), 1);
 
         size += __pose_xyt_t_encoded_array_size(&(p[element].goal_pose), 1);
@@ -112,7 +119,7 @@ size_t mbot_command_t_struct_size(void)
 
 int mbot_command_t_num_fields(void)
 {
-    return 5;
+    return 6;
 }
 
 int mbot_command_t_get_field(const mbot_command_t *p, int i, lcm_field_t *f)
@@ -132,6 +139,15 @@ int mbot_command_t_get_field(const mbot_command_t *p, int i, lcm_field_t *f)
         }
         
         case 1: {
+            f->name = "is_mode_spin";
+            f->type = LCM_FIELD_INT8_T;
+            f->typestr = "int8_t";
+            f->num_dim = 0;
+            f->data = (void *) &p->is_mode_spin;
+            return 0;
+        }
+        
+        case 2: {
             f->name = "state";
             f->type = LCM_FIELD_INT8_T;
             f->typestr = "int8_t";
@@ -140,7 +156,7 @@ int mbot_command_t_get_field(const mbot_command_t *p, int i, lcm_field_t *f)
             return 0;
         }
         
-        case 2: {
+        case 3: {
             /* pose_xyt_t */
             f->name = "goal_pose";
             f->type = LCM_FIELD_USER_TYPE;
@@ -150,7 +166,7 @@ int mbot_command_t_get_field(const mbot_command_t *p, int i, lcm_field_t *f)
             return 0;
         }
         
-        case 3: {
+        case 4: {
             f->name = "num_obstacles";
             f->type = LCM_FIELD_INT32_T;
             f->typestr = "int32_t";
@@ -159,7 +175,7 @@ int mbot_command_t_get_field(const mbot_command_t *p, int i, lcm_field_t *f)
             return 0;
         }
         
-        case 4: {
+        case 5: {
             /* pose_xyt_t */
             f->name = "obstacle_poses";
             f->type = LCM_FIELD_USER_TYPE;
@@ -202,6 +218,9 @@ int __mbot_command_t_decode_array(const void *buf, int offset, int maxlen, mbot_
         thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &(p[element].utime), 1);
         if (thislen < 0) return thislen; else pos += thislen;
 
+        thislen = __int8_t_decode_array(buf, offset + pos, maxlen - pos, &(p[element].is_mode_spin), 1);
+        if (thislen < 0) return thislen; else pos += thislen;
+
         thislen = __int8_t_decode_array(buf, offset + pos, maxlen - pos, &(p[element].state), 1);
         if (thislen < 0) return thislen; else pos += thislen;
 
@@ -225,6 +244,8 @@ int __mbot_command_t_decode_array_cleanup(mbot_command_t *p, int elements)
     for (element = 0; element < elements; element++) {
 
         __int64_t_decode_array_cleanup(&(p[element].utime), 1);
+
+        __int8_t_decode_array_cleanup(&(p[element].is_mode_spin), 1);
 
         __int8_t_decode_array_cleanup(&(p[element].state), 1);
 
@@ -266,6 +287,8 @@ int __mbot_command_t_clone_array(const mbot_command_t *p, mbot_command_t *q, int
     for (element = 0; element < elements; element++) {
 
         __int64_t_clone_array(&(p[element].utime), &(q[element].utime), 1);
+
+        __int8_t_clone_array(&(p[element].is_mode_spin), &(q[element].is_mode_spin), 1);
 
         __int8_t_clone_array(&(p[element].state), &(q[element].state), 1);
 

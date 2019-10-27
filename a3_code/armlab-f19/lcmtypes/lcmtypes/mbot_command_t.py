@@ -12,13 +12,18 @@ import struct
 import lcmtypes.pose_xyt_t
 
 class mbot_command_t(object):
-    __slots__ = ["utime", "state", "goal_pose", "num_obstacles", "obstacle_poses"]
+    __slots__ = ["utime", "is_mode_spin", "state", "goal_pose", "num_obstacles", "obstacle_poses"]
+
+    __typenames__ = ["int64_t", "int8_t", "int8_t", "lcmtypes.pose_xyt_t", "int32_t", "lcmtypes.pose_xyt_t"]
+
+    __dimensions__ = [None, None, None, None, None, ["num_obstacles"]]
 
     STATE_STOPPED = 0
     STATE_MOVING = 1
 
     def __init__(self):
         self.utime = 0
+        self.is_mode_spin = 0
         self.state = 0
         self.goal_pose = lcmtypes.pose_xyt_t()
         self.num_obstacles = 0
@@ -31,7 +36,7 @@ class mbot_command_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qb", self.utime, self.state))
+        buf.write(struct.pack(">qbb", self.utime, self.is_mode_spin, self.state))
         assert self.goal_pose._get_packed_fingerprint() == lcmtypes.pose_xyt_t._get_packed_fingerprint()
         self.goal_pose._encode_one(buf)
         buf.write(struct.pack(">i", self.num_obstacles))
@@ -51,7 +56,7 @@ class mbot_command_t(object):
 
     def _decode_one(buf):
         self = mbot_command_t()
-        self.utime, self.state = struct.unpack(">qb", buf.read(9))
+        self.utime, self.is_mode_spin, self.state = struct.unpack(">qbb", buf.read(10))
         self.goal_pose = lcmtypes.pose_xyt_t._decode_one(buf)
         self.num_obstacles = struct.unpack(">i", buf.read(4))[0]
         self.obstacle_poses = []
@@ -64,8 +69,8 @@ class mbot_command_t(object):
     def _get_hash_recursive(parents):
         if mbot_command_t in parents: return 0
         newparents = parents + [mbot_command_t]
-        tmphash = (0xe884f1c967e65792+ lcmtypes.pose_xyt_t._get_hash_recursive(newparents)+ lcmtypes.pose_xyt_t._get_hash_recursive(newparents)) & 0xffffffffffffffff
-        tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
+        tmphash = (0x75344374abf3c6b9+ lcmtypes.pose_xyt_t._get_hash_recursive(newparents)+ lcmtypes.pose_xyt_t._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
     _packed_fingerprint = None
