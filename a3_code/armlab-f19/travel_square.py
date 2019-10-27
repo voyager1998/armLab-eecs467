@@ -6,7 +6,7 @@ from lcmtypes import mbot_status_t
 # sample structure for a complex task
 class travel_square():
 
-    square_queue = [(0, 0.5), (0, 1), (-0.5, 1), (-1, 1), (-1, 0.5), (-1, 0), (-0.5, 0), (0, 0)]
+    square_queue = [(0, 0), (0, 0.5), (0, 1), (-0.5, 1), (-1, 1), (-1, 0.5), (-1, 0), (-0.5, 0)]
     index = 0
 
     def __init__(self, fsm):

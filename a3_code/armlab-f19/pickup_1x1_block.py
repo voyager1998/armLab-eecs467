@@ -44,7 +44,7 @@ class pickup_1x1_block():
 
             new_location = locate_1x1_block(self.fsm.tags[0], self.fsm.extrinsic_mtx)
             print("block location received")
-            time.sleep(1)
+            time.sleep(3)
             print("start picking")
             if pick_1x1_block(self.fsm.rexarm, new_location) == 0:
                 self.state = 'scan'

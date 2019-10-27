@@ -11,7 +11,7 @@ from lcmtypes import mbot_command_t
 PICK_RANGE = 0.2
 
 D2R = 3.141592/180.0
-GRIPPER_OPEN = -60 * D2R
+GRIPPER_OPEN = -30 * D2R
 I2M = 0.0254
 
 PI = 3.141592
@@ -64,37 +64,53 @@ def pick_1x1_block(rexarm, endpoint):
     time.sleep(1)
 
     set_erect(rexarm)
-    time.sleep(2)
+    time.sleep(6)
     
     set_snake(rexarm)
-    time.sleep(1)
+    time.sleep(3)
 
     return 1
 
-def set_erect(rexarm, gripper=None):
+def set_erect(rexarm, gripper=10 * D2R):
     # return home
+    i = 0
+    #while i < 20:
+        #try:
     set_positions = [0] * 5
     set_positions[0] = 0 * D2R
     set_positions[1] = 0 * D2R
     set_positions[2] = -90 * D2R
     set_positions[3] = 90 * D2R
+    set_positions[4] = gripper
+        #except:
+          #  i += 1
+    '''
     if gripper is None:
         set_positions[4] = rexarm.get_positions()[4]
     else:
         set_positions[4] = gripper
+    '''
 
     rexarm.set_positions(set_positions, update_now = True)
 
-def set_snake(rexarm, gripper=None):
+def set_snake(rexarm, gripper=10*D2R):
+    i = 0
+    #while i < 20:
+        #try:
     set_positions = [0] * 5
     set_positions[0] = 90 * D2R
     set_positions[1] = 90 * D2R
     set_positions[2] = -90 * D2R
     set_positions[3] = -90 * D2R
+    set_positions[4] = gripper
+        #except:
+         #   i += 1
+    '''
     if gripper is None:
         set_positions[4] = rexarm.get_positions()[4]
     else:
         set_positions[4] = gripper
+    '''
 
     rexarm.set_positions(set_positions, update_now = True)
 
@@ -145,7 +161,7 @@ def locate_1x1_block(tag, extrinsic_mtx):
     print("Block pose: ", pick_block_position)
     return pick_block_position
 
-def put_block_in_trash(rexarm, gripper_angle):
+def put_block_in_trash(rexarm, gripper_angle=10*D2R):
     set_positions = [0]*5
     set_positions[0] = 0 * D2R
     set_positions[1] = 0 * D2R
