@@ -94,7 +94,8 @@ class StateMachine():
             print("bot status:", self.mbot_status)
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
-            if state_obj.state == 'idle':
+
+            if self.current_state in ['spin_state'] and state_obj.state == 'idle':
                 time.sleep(5)
                 # temp_pose = self.slam_pose
                 # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)

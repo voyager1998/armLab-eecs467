@@ -68,7 +68,7 @@ class pickup_1x1_block():
         if self.state == 'watch':
             # print("in watch state")
             time.sleep(3)
-            if self.current_step >= RANGE * 2 + 1:
+            if self.current_step >= RANGE * 2:
                 self.state = 'face_to_closest'
                 print("---------------finish one round---------------")
                 if self.closest_tag_number == -1:

@@ -180,11 +180,11 @@ class TaskThread(QThread):
         elif self.task_num == 2:
             # print("Setting to snake pose")
             # set_snake(self.state_machine.rexarm)
-            self.state_machine.set_current_state('pickup_1x1_block')
+            self.state_machine.set_current_state('spin_state')
             # self.spin_state.begin_task()
         elif self.task_num == 3:
             print("Run and Pick!")
-            self.state_machine.set_current_state("send_to_garbage")
+            self.state_machine.set_current_state("pickup_1x1_block")
         elif self.task_num == 4:
             pass
 
