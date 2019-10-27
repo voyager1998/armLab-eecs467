@@ -175,7 +175,7 @@ class TaskThread(QThread):
         self.task_num = task_num
         if self.task_num == 1:
             print("Start picking block!")
-            block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
+            block_pose = locate_1x1_block(self.state_machine.tags[0], self.state_machine.extrinsic_mtx)
             self.task5.begin_task(block_pose)
         elif self.task_num == 2:
             # print("Setting to snake pose")

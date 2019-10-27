@@ -3,7 +3,7 @@ import time
 from util.our_utils import *
 
 PI = 3.141592
-STEP = 6
+STEP = 2
 
 # sample structure for a complex task
 class spin_state():
@@ -34,7 +34,7 @@ class spin_state():
 
         if self.state == 'watch':
             print("in watch state")
-            time.sleep(3)
+            time.sleep(6)
             if self.current_step >= STEP * 2:
                 self.state = 'face_to_closest'
                 print("---------------finish one round---------------")
@@ -65,6 +65,11 @@ class spin_state():
         if self.state == 'face_to_closest':
             self.face_closest()
             print("faced towards the closest block")
+            if self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
+                print("Turned to facing block")
+                self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+                self.state = 'idle'
+                time.sleep(5)
 
     def begin_task(self):
         print("begin spinning")
