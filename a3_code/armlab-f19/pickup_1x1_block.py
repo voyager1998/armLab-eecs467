@@ -17,10 +17,10 @@ class pickup_1x1_block():
             self.state = 'grabbing'
         if self.state == 'grabbing':
             print("Start relocating the block and picking")
-            time.sleep(8)
+            time.sleep(3)
             new_location = locate_1x1_block(self.fsm.tags, self.fsm.extrinsic_mtx)
             print("block location received")
-            time.sleep(1)
+            time.sleep(3)
             print("start picking")
             pick_1x1_block(self.fsm.rexarm, new_location)
             self.state = 'idle'
