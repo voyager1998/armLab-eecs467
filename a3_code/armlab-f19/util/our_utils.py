@@ -14,6 +14,8 @@ D2R = 3.141592/180.0
 GRIPPER_OPEN = -60 * D2R
 I2M = 0.0254
 
+PI = 3.141592
+
 def rot_tran_to_homo(rotation_matrix, tvec):
     extrinsic = np.append(rotation_matrix, tvec, axis=1)
     bottom_row = [[0,0,0,1]]
@@ -29,6 +31,10 @@ def return_home(rexarm, gripper_angle):
 def pick_1x1_block(rexarm, endpoint):
     print("begin picking up 1x1 block!")
     #Get to block
+    GRASP_OFFSET = 0.02
+    endpoint[0] += endpoint[0] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[1] += endpoint[1] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    
     for phi in range(-20, -91, -10):
         endpoint[3] = phi
         joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
@@ -177,11 +183,14 @@ def find_closest_block(tags, extrinsic_mtx):
         if(euclidian_distance(closest_pose[0], closest_pose[1], 0, 0) > euclidian_distance(current_pose[0], current_pose[1], 0, 0)):
             closest_pose = current_pose
             closest_tag_id = tag.tag_id
+    # angle positive in counter-clockwise
     if(closest_tag_id == -1):
         return None
-    robot_angle = np.array([0, 1])
-    block_angle = np.array([closest_pose[0], closest_pose[1]])
-    sign = np.sign(closest_pose[0])
-    found_angle_cos = np.dot(robot_angle,block_angle)/np.linalg.norm(robot_angle)/np.linalg.norm(block_angle)
-    angle = math.acos(found_angle_cos)
-    return [-sign * angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id]
+    angle = np.arctan2(-closest_pose[0], closest_pose[1])
+    return (angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
+
+def normalize_angle(angle):
+    newAngle = angle
+    while newAngle <= -PI: newAngle += 2*PI
+    while newAngle > PI: newAngle -= 2*PI
+    return newAngle

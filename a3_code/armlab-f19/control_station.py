@@ -29,6 +29,7 @@ from apriltags3 import Detector
 
 from task1 import task1
 from task5 import task5
+from spin_state import spin_state
 from util.our_utils import *
 
 
@@ -156,6 +157,7 @@ class TaskThread(QThread):
         self.state_machine = state_machine
         self.task1 = task1(state_machine)
         self.task5 = task5(state_machine)
+        self.spin_state = spin_state(state_machine)
 
     def run(self):
         while True:
@@ -176,8 +178,10 @@ class TaskThread(QThread):
             block_pose = locate_1x1_block(self.state_machine.tags, self.state_machine.extrinsic_mtx)
             self.task5.begin_task(block_pose)
         elif self.task_num == 2:
-            print("Setting to snake pose")
-            set_snake(self.state_machine.rexarm)
+            # print("Setting to snake pose")
+            # set_snake(self.state_machine.rexarm)
+            self.state_machine.set_current_state('spin_state')
+            # self.spin_state.begin_task()
         elif self.task_num == 3:
             print("Run and Pick!")
             self.state_machine.set_current_state("travel_square")
