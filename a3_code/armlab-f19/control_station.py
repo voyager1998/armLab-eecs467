@@ -180,7 +180,7 @@ class TaskThread(QThread):
             set_snake(self.state_machine.rexarm)
         elif self.task_num == 3:
             print("Run and Pick!")
-            self.state_machine.set_current_state('pickup_3x1_block')
+            self.state_machine.set_current_state("travel_square")
         elif self.task_num == 4:
             pass
 
