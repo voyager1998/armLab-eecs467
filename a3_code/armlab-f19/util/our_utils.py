@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import lcm
+import math
 from lcmtypes import pose_xyt_t
 from lcmtypes import occupancy_grid_t
 from lcmtypes import mbot_status_t
@@ -12,6 +13,8 @@ PICK_RANGE = 0.2
 D2R = 3.141592/180.0
 GRIPPER_OPEN = -60 * D2R
 I2M = 0.0254
+
+PI = 3.141592
 
 def rot_tran_to_homo(rotation_matrix, tvec):
     extrinsic = np.append(rotation_matrix, tvec, axis=1)
@@ -28,6 +31,10 @@ def return_home(rexarm, gripper_angle):
 def pick_1x1_block(rexarm, endpoint):
     print("begin picking up 1x1 block!")
     #Get to block
+    GRASP_OFFSET = 0.02
+    endpoint[0] += endpoint[0] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[1] += endpoint[1] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    
     for phi in range(-20, -91, -10):
         endpoint[3] = phi
         joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
@@ -129,3 +136,31 @@ def run_and_pick_util(block_pose): # block_pose = [x, y, z]
         pass
     else:
         pass
+
+def euclidian_distance(pose1_x, pose1_y, pose2_x, pose2_y):
+    # print(pose1_x, pose2_x, pose1_y, pose2_y)
+    return math.sqrt((pose1_x - pose2_x)**2 + (pose1_y - pose2_y)**2)
+
+def get_tag_positions(tags, extrinsic_mtx):
+    tag_poses = []
+    for tag in tags:
+        tag_poses.append(from_AprilTag_to_pose(tag, extrinsic_mtx))
+    return tag_poses
+
+def find_closest_block(tags, extrinsic_mtx):
+    closest_pose = [9999, 9999]
+    closest_tag_id = -1
+    for tag in tags:
+        current_pose = from_AprilTag_to_pose(tag, extrinsic_mtx)
+        if(euclidian_distance(closest_pose[0], closest_pose[1], 0, 0) > euclidian_distance(current_pose[0], current_pose[1], 0, 0)):
+            closest_pose = current_pose
+            closest_tag_id = tag.tag_id
+    # angle positive in counter-clockwise
+    angle = np.arctan2(-closest_pose[0], closest_pose[1])
+    return (angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
+
+def normalize_angle(angle):
+    newAngle = angle
+    while newAngle <= -PI: newAngle += 2*PI
+    while newAngle > PI: newAngle -= 2*PI
+    return newAngle

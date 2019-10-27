@@ -59,8 +59,10 @@ public:
         confirm.utime = 0;
         confirm.creation_time = 0;
         confirm.channel = "";
+
+        is_mode_spin_ = 0;
     }
-    
+
     /**
     * updateCommand calculates the new motor command to send to the Mbot. This method is called after each call to
     * lcm.handle. You need to check if you have sufficient data to calculate a new command, or if the previous command
@@ -90,9 +92,80 @@ public:
 
         cmd.utime = now();
         
+        if(is_mode_spin_ == 1){
+            // std::cout << "I'M SPINNING" << '\n';
+            if (!targets_.empty() && !odomTrace_.empty()){
+                pose_xyt_t target = targets_.back();
+
+                // Convert odometry to the global coordinates
+                pose_xyt_t pose = currentPose();
+
+                double targetHeading = target.theta;
+                double error = angle_diff(targetHeading, pose.theta);
+                std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
+                std::cout << "Angle error:" << error << '\n';
+
+                if (std::abs(error) > 0.05)  // turn in place until pointed approximately at the target
+                {
+                    cmd.trans_v = 0;  //set translational velocity to 0
+
+                    float turnspeed = 0.0;
+                    if (error > 0) {
+                        turnspeed = -kTurnSpeed;
+                    } else {
+                        turnspeed = kTurnSpeed;
+                    }
+
+                    if (std::abs(error) < 0.5) {
+                        // kick in PID close to end
+                        double deltaError = error - lastError_;
+                        totalError_ += error;
+                        lastError_ = error;
+
+                        turnspeed = (error * kPGain) + (deltaError * kDGain) + (totalError_ * kIGain);
+                        if (turnspeed >= 0) {
+                            turnspeed = std::min(turnspeed, -kTurnMaxSpeed);
+                        } else {
+                            turnspeed = std::max(-turnspeed, kTurnMaxSpeed);
+                        }
+                    }
+
+                    // Turn left if the target is to the left
+                    if (error > 0.0) {
+                        std::cout << "Turning left\n";
+                    }
+                    // Turn right if the target is to the right
+                    else  // if(error < 0.0)
+                    {
+                        std::cout << "Turning right\n";
+                    }
+                    cmd.trans_v = 0;
+                    cmd.angular_v = turnspeed;
+
+                } else {
+                    std::cout << "Angle Reached.\n";
+                    cmd.trans_v = 0;
+                    cmd.angular_v = 0;
+                    totalError_ = 0;
+                    lastError_ = 0;
+
+                    bool haveTarget = assignNextTarget();
+
+                    if (!haveTarget) {
+                        mbot_status_t msg;
+                        msg.status = msg.STATUS_COMPLETE;
+                        msg.utime = now();
+                        lcmInstance->publish(MBOT_STATUS_CHANNEL, &msg);
+                        std::cout << "COMPLETED PATH!\n";
+                    }
+                }
+            }
+            return cmd;
+        }
+
         if(haveReachedTarget())
         {
-		std::cout << "TARGET REACHED\n";
+		    std::cout << "TARGET REACHED\n";
             bool haveTarget = assignNextTarget();
             
             if(!haveTarget)
@@ -115,12 +188,12 @@ public:
             
             double targetHeading = std::atan2(target.y - pose.y, target.x - pose.x);
             double error = angle_diff(targetHeading, pose.theta);
-            std::cout << "targetHeading: " << targetHeading << ", pose Theta: " << pose.theta << std::endl;
+            std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
             std::cout << "Angle error:" << error << '\n';
 
             if(state_ == TURN)
             {
-                std::cout << "IM TURNING" << '\n';
+                std::cout << "I'M TURNING" << '\n';
                 if(std::abs(error) > 0.05) // turn in place until pointed approximately at the target
                 {
 
@@ -173,7 +246,7 @@ public:
             }
             else if(state_ == DRIVE) // Use feedback to drive to the target once approximately pointed in the correct direction
             {
-                std::cout << "IM DRIVING" << '\n';
+                std::cout << "I'M DRIVING" << '\n';
                 double speed = kDesiredSpeed;
 
                 float distToGoal = std::sqrt(std::pow(target.x - pose.x, 2.0f) + std::pow(target.y - pose.y, 2.0f));
@@ -198,7 +271,7 @@ public:
                 } else {
                     cmd.angular_v = -std::min(std::abs(cmd.angular_v), kTurnMaxSpeed * 1.5f);
                 }
-		}
+            }
             else
             {
                 std::cerr << "ERROR: MotionController: Entered unknown state: " << state_ << '\n';
@@ -241,21 +314,20 @@ public:
         lcmInstance->publish(MESSAGE_CONFIRMATION_CHANNEL, &confirm);
     }
 
-    void handleBlock(const lcm::ReceiveBuffer *buf, const std::string &channel, const mbot_command_t *block_pose_world)
-    {
+    void handleTarget(const lcm::ReceiveBuffer* buf, const std::string& channel, const mbot_command_t* target_pose_world) {
+        is_mode_spin_ = target_pose_world->is_mode_spin;
+
         std::vector<pose_xyt_t> temp;
-        temp.push_back(block_pose_world->goal_pose);
+        temp.push_back(target_pose_world->goal_pose);
         // temp.push_back(odomToGlobalFrame_);
-        pose_xyt_t start;
-        start.x = 0;
-        start.y = 0;
-        start.theta = 0;
+        pose_xyt_t start = currentPose();
         temp.push_back(start);
         targets_ = temp;
 
-        std::cout << "received new path at time: " << block_pose_world->utime << "\n";
-        std::cout << "received position of the block: " << (block_pose_world->goal_pose).x
-                  << ", " << (block_pose_world->goal_pose).y << std::endl;
+        std::cout << "received new path at time: " << target_pose_world->utime << "\n";
+        std::cout << "received position of the block: " << (target_pose_world->goal_pose).x
+                  << ", " << (target_pose_world->goal_pose).y << ", "
+                  << (target_pose_world->goal_pose).theta << std::endl;
 
         assignNextTarget();
     }
@@ -289,7 +361,8 @@ private:
     pose_xyt_t odomToGlobalFrame_;      // transform to convert odometry into the global/map coordinates for navigating in a map
     PoseTrace  odomTrace_;              // trace of odometry for maintaining the offset estimate
     std::vector<pose_xyt_t> targets_;
-    
+    int8_t is_mode_spin_;
+
     // Error terms for the current target
     State state_;
     double lastError_;      // for D-term
@@ -388,7 +461,7 @@ int main(int argc, char** argv)
     lcmInstance.subscribe(SLAM_POSE_CHANNEL, &MotionController::handlePose, &controller);
     lcmInstance.subscribe(CONTROLLER_PATH_CHANNEL, &MotionController::handlePath, &controller);
     lcmInstance.subscribe(MBOT_TIMESYNC_CHANNEL, &MotionController::handleTimesync, &controller);
-    lcmInstance.subscribe(MBOT_COMMAND_CHANNEL, &MotionController::handleBlock, &controller);
+    lcmInstance.subscribe(MBOT_COMMAND_CHANNEL, &MotionController::handleTarget, &controller);
 
     signal(SIGINT, exit);
     

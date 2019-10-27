@@ -6,6 +6,8 @@ struct mbot_command_t
     // Possible commanded states of the mbot.
     const int8_t STATE_STOPPED = 0;
     const int8_t STATE_MOVING = 1;
+    
+    int8_t is_mode_spin;
 
     // The commanded state
     int8_t state;

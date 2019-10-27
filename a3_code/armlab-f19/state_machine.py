@@ -13,6 +13,7 @@ from lcmtypes import mbot_status_t
 from lcmtypes import mbot_command_t
 from util.our_utils import *
 from pickup_1x1_block import pickup_1x1_block
+from spin_state import spin_state
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
@@ -50,6 +51,7 @@ class StateMachine():
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)
+        self.spin_state = spin_state(self)
 
     def set_current_state(self, state):
         self.current_state = state
@@ -80,8 +82,12 @@ class StateMachine():
 
         # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
         if (self.current_state in ['pickup_1x1_block']):
-            print("current state is pickup_1x1_block")
-            print("bot status:", self.mbot_status)
+            # print("current state is pickup_1x1_block")
+            # print("bot status:", self.mbot_status)
+            state_obj = getattr(self, self.current_state)
+            state_obj.operate_task()
+
+        if (self.current_state in ['spin_state']):
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
 
@@ -156,7 +162,11 @@ class StateMachine():
         """TODO: Implement this function"""
         self.rexarm.send_commands()
 
-    def moving_mbot(self, block_pose): # block_pose = [x, y, z]
+    def moving_mbot(self, target_pose_world, is_mode_spin):
+        self.publish_mbot_command(mbot_command_t.STATE_MOVING,
+                (target_pose_world[0], target_pose_world[1], target_pose_world[2]), [], is_mode_spin)
+
+    def moving_mbot_to_block(self, block_pose): # block_pose = [x, y, z] is the block pose in arm frame
         """TODO: Implement this function"""
         if self.slam_pose == None:
             self.slam_pose = [0, 0, 0]
@@ -178,7 +188,7 @@ class StateMachine():
         tar_pose = mbot_to_world @ rex_to_mbot @ block_pose
         tar_x, tar_y = tar_pose[0], tar_pose[1]
         print("block pose in world:", tar_x, tar_y)
-        self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [])
+        self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [], 0)
         return (tar_x, tar_y)
 
 
@@ -196,9 +206,9 @@ class StateMachine():
         Feedback Handler for mbot status
         this is run when a feedback message is recieved
         """
-        print("hahaha")
+        # print("hahaha")
         msg = mbot_status_t.decode(data)
-        print("new status received:", msg.status)
+        # print("new status received:", msg.status)
         self.mbot_status = msg.status
 
     def get_mbot_feedback(self):
@@ -208,13 +218,14 @@ class StateMachine():
         """
         self.lc.handle_timeout(10)
 
-    def publish_mbot_command(self, state, goal_pose, obstacles):
+    def publish_mbot_command(self, state, goal_pose, obstacles, is_mode_spin):
         """
         Publishes mbot command.
         """
         msg = mbot_command_t()
         msg.utime = int(time.time() * 1e6)
         msg.state = state
+        msg.is_mode_spin = is_mode_spin
 
         if state == mbot_command_t.STATE_STOPPED:
             pass
