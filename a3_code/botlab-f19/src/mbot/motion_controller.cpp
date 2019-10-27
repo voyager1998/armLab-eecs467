@@ -93,7 +93,7 @@ public:
         cmd.utime = now();
         
         if(is_mode_spin_ == 1){
-            std::cout << "I'M SPINNING" << '\n';
+            // std::cout << "I'M SPINNING" << '\n';
             if (!targets_.empty() && !odomTrace_.empty()){
                 pose_xyt_t target = targets_.back();
 
