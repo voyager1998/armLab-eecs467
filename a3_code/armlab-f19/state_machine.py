@@ -17,6 +17,7 @@ from pickup_3x1_block import pickup_3x1_block
 from pickup_corner_block import pickup_corner_block
 from travel_square import travel_square
 from spin_state import spin_state
+from send_to_garbage import send_to_garbage
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
@@ -58,6 +59,7 @@ class StateMachine():
         self.pickup_corner_block = pickup_corner_block(self)
         self.travel_square = travel_square(self)
         self.spin_state = spin_state(self)
+        self.send_to_garbage = send_to_garbage(self, travel_square)
 
     def set_current_state(self, state):
         self.current_state = state
@@ -87,7 +89,7 @@ class StateMachine():
             pass
 
         # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
-        if (self.current_state in ['pickup_1x1_block', 'spin_state', 'pickup_3x1_block', 'pickup_corner_block', 'travel_square']):
+        if (self.current_state in ['pickup_1x1_block', 'spin_state', 'pickup_3x1_block', 'pickup_corner_block', 'travel_square', 'send_to_garbage']):
             print("current state is ", self.current_state)
             print("bot status:", self.mbot_status)
             state_obj = getattr(self, self.current_state)
