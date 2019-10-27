@@ -94,6 +94,13 @@ class StateMachine():
             print("bot status:", self.mbot_status)
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
+            if state_obj.state == 'idle':
+                time.sleep(5)
+                # temp_pose = self.slam_pose
+                # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)
+                # if (self.mbot_status == mbot_status_t.STATUS_COMPLETE):
+                #     self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2]), 1)
+                self.set_current_state('pickup_1x1_block')
 
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
@@ -174,24 +181,33 @@ class StateMachine():
         """TODO: Implement this function"""
         if self.slam_pose == None:
             self.slam_pose = [0, 0, 0]
-        # I re-wrote all this because i realized i needed to learn homogeneous coordinates for the exam.
-        # I used your original code to test that it's correct
-        mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
-                                    [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
-                                    [0,0,1,0],
-                                    [0, 0, 0, 1]])
-        DIST_TO_BLOCK = 0.07
-        rex_to_mbot = np.array([[0, 1,0,-DIST_TO_BLOCK],
-                                [-1,0,0,0],
-                                [0, 0,1,0],
-                                [0, 0,0,1]])
-        block_pose = block_pose.flatten()[0:3].reshape((3,1))
-        block_pose = np.append(block_pose,[1])
-        # tar_x = self.slam_pose[0] + block_pose[0] * np.sin(self.slam_pose[2]) + block_pose[1] * np.cos(self.slam_pose[2])
-        # tar_y = self.slam_pose[1] + block_pose[1] * np.sin(self.slam_pose[2]) - block_pose[0] * np.cos(self.slam_pose[2])
-        tar_pose = mbot_to_world @ rex_to_mbot @ block_pose
-        tar_x, tar_y = tar_pose[0], tar_pose[1]
-        print("block pose in world:", tar_x, tar_y)
+        DIST_TO_BLOCK = 0.12
+        # mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
+        #                             [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
+        #                             [0,0,1,0],
+        #                             [0, 0, 0, 1]])
+        # rex_to_mbot = np.array([[0, 1,0,-DIST_TO_BLOCK],
+        #                         [-1,0,0,0],
+        #                         [0, 0,1,0],
+        #                         [0, 0,0,1]])
+        # block_pose = block_pose.flatten()[0:3].reshape((3,1))
+        # block_pose = np.append(block_pose,[1])
+        # tar_pose = mbot_to_world @ rex_to_mbot @ block_pose
+        # tar_x, tar_y = tar_pose[0], tar_pose[1]
+        # print("Nico's block pose in world:", tar_x, tar_y)
+
+        block_dist = np.sqrt(block_pose[0]** 2 + block_pose[1]** 2)
+        # print("distance to block:", block_dist)
+        if block_dist > DIST_TO_BLOCK:
+            partial = (block_dist - DIST_TO_BLOCK) / block_dist
+            print("partial = ", partial)
+        else:
+            partial = 1
+        print("current theta:", self.slam_pose[2]) # TODO: the slam theta is flipped, IDK WHY???
+        temp_theta = self.slam_pose[2]
+        tar_x = self.slam_pose[0] + partial*block_pose[0] * np.sin(temp_theta) + partial*block_pose[1] * np.cos(temp_theta)
+        tar_y = self.slam_pose[1] + partial*block_pose[1] * np.sin(temp_theta) - partial*block_pose[0] * np.cos(temp_theta)
+        print("Kun's block pose in world:", tar_x, tar_y)
         self.publish_mbot_command(mbot_command_t.STATE_MOVING, (tar_x, tar_y, 0), [], 0)
         return (tar_x, tar_y)
 
@@ -202,7 +218,7 @@ class StateMachine():
         this is run when a feedback message is recieved
         """
         msg = pose_xyt_t.decode(data)
-        # print("new slam pose received:", msg.x, msg.y)
+        print("new slam pose received:", msg.x, msg.y, msg.theta)
         self.slam_pose = (msg.x, msg.y, msg.theta)
 
     def mbotstatus_feedback_handler(self, channel, data):

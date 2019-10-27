@@ -34,12 +34,15 @@ def pick_1x1_block(rexarm, endpoint):
     GRASP_OFFSET = 0.02
     endpoint[0] += endpoint[0] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
     endpoint[1] += endpoint[1] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[2] += 0.003
     
     for phi in range(-20, -91, -10):
         endpoint[3] = phi
         joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
         if joint_positions_endpoint != None:
             break
+    if joint_positions_endpoint is None:
+        return 0
 
     set_positions = [0] * 5
     set_positions[4] = GRIPPER_OPEN # open gripper
@@ -66,6 +69,7 @@ def pick_1x1_block(rexarm, endpoint):
     set_snake(rexarm)
     time.sleep(1)
 
+    return 1
 
 def set_erect(rexarm, gripper=None):
     # return home
@@ -132,10 +136,10 @@ def knock_back(initial_position, rexarm):
     '''
 
 
-def locate_1x1_block(tags, extrinsic_mtx):
+def locate_1x1_block(tag, extrinsic_mtx):
     pick_block_position = [0, 3*I2M, I2M/2, -90]
-    for tag in tags:
-        pick_block_position = from_AprilTag_to_pose(tag, extrinsic_mtx, offset)
+    # for tag in tags:
+    pick_block_position = from_AprilTag_to_pose(tag, extrinsic_mtx)
     pick_block_position[3] = -45
     pick_block_position[0] = pick_block_position[0] - 0.01 # shift target 1 cm to the left
     print("Block pose: ", pick_block_position)
