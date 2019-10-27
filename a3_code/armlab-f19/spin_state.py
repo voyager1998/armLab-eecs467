@@ -3,7 +3,7 @@ import time
 from util.our_utils import *
 
 PI = 3.141592
-STEP = 6
+STEP = 2
 
 # sample structure for a complex task
 class spin_state():
@@ -23,9 +23,10 @@ class spin_state():
             self.state = 'idle'
 
         if self.state == 'spin':
-            print("in spin state")
+            # print("in spin state")
+            self.fsm.get_mbot_feedback()
             normalizedAngle = normalize_angle(self.start_theta + PI/STEP*self.current_step)
-            print("target angle:", normalizedAngle)
+            # print("target angle:", normalizedAngle)
             self.fsm.moving_mbot((self.fsm.slam_pose[0], self.fsm.slam_pose[1], normalizedAngle), 1)
             if self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
                 print("spinned to desired pose")
@@ -34,7 +35,8 @@ class spin_state():
 
         if self.state == 'watch':
             print("in watch state")
-            time.sleep(3)
+            time.sleep(1)
+            self.fsm.get_mbot_feedback()
             if self.current_step >= STEP * 2:
                 self.state = 'face_to_closest'
                 print("---------------finish one round---------------")
@@ -47,7 +49,7 @@ class spin_state():
                 print("closest block distance:", self.closest_distance)
                 if(self.closest_tag_number == 1):
                     print("long block")
-
+                self.face_closest()
             else:
                 tags = self.fsm.tags
                 for tag in tags:
@@ -62,9 +64,12 @@ class spin_state():
                 print("current step", self.current_step)
                 self.current_step += 1
 
-        if self.state == 'face_to_closest':
-            self.face_closest()
+        if self.state == 'face_to_closest' and self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
             print("faced towards the closest block")
+            self.fsm.get_mbot_feedback()
+            self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+            self.state = 'idle'
+            time.sleep(5)
 
     def begin_task(self):
         print("begin spinning")
