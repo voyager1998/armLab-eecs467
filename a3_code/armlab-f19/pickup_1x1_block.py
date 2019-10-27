@@ -124,7 +124,9 @@ class pickup_1x1_block():
 
     def begin_task(self):
         print("begin task pick up 1x1 block")
+        time.sleep(1)
         self.fsm.get_mbot_feedback()
+        
         if not self.fsm.tags:
             print("no tag detected")
             self.state = 'scan'

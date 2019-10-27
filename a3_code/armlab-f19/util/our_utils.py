@@ -188,8 +188,8 @@ def find_closest_block(tags, extrinsic_mtx):
             closest_pose = current_pose
             closest_tag_id = tag.tag_id
     # angle positive in counter-clockwise
-    if(closest_tag_id == -1):
-        return None
+    # if(closest_tag_id == -1):
+    #     return None
     angle = np.arctan2(-closest_pose[0], closest_pose[1])
     return (angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
 

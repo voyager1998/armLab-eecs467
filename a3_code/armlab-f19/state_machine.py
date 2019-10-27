@@ -90,8 +90,9 @@ class StateMachine():
 
         # this calls operate_task on the pickup_1x1_block object, pickup_corner_block object, etc
         if (self.current_state in ['pickup_1x1_block', 'spin_state', 'pickup_3x1_block', 'pickup_corner_block', 'travel_square', 'send_to_garbage']):
-            print("current state is ", self.current_state)
-            print("bot status:", self.mbot_status)
+            # print("current state is ", self.current_state)
+            # print("bot status:", self.mbot_status)
+            time.sleep(1)
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
 
@@ -204,8 +205,9 @@ class StateMachine():
             print("partial = ", partial)
         else:
             partial = 1
-        print("current theta:", self.slam_pose[2]) # TODO: the slam theta is flipped, IDK WHY???
         temp_theta = self.slam_pose[2]
+        print("current theta:", temp_theta)
+        print("current block pose in arm:", block_pose[0], block_pose[1])
         tar_x = self.slam_pose[0] + partial*block_pose[0] * np.sin(temp_theta) + partial*block_pose[1] * np.cos(temp_theta)
         tar_y = self.slam_pose[1] + partial*block_pose[1] * np.sin(temp_theta) - partial*block_pose[0] * np.cos(temp_theta)
         print("Kun's block pose in world:", tar_x, tar_y)
