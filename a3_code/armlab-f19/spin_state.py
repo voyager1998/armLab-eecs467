@@ -28,14 +28,13 @@ class spin_state():
             normalizedAngle = normalize_angle(self.start_theta + PI/STEP*self.current_step)
             # print("target angle:", normalizedAngle)
             self.fsm.moving_mbot((self.fsm.slam_pose[0], self.fsm.slam_pose[1], normalizedAngle), 1)
-            if self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
-                print("spinned to desired pose")
-                self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
-                self.state = 'watch'
+            self.state = 'watch'
 
-        if self.state == 'watch':
+        if self.state == 'watch' and self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
+            print("spinned to desired pose")
+            self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
             print("in watch state")
-            time.sleep(1)
+            time.sleep(3)
             self.fsm.get_mbot_feedback()
             if self.current_step >= STEP * 2:
                 self.state = 'face_to_closest'
@@ -55,7 +54,7 @@ class spin_state():
                 for tag in tags:
                     print("see tag", tag.tag_id)
                 closest_at_angle = find_closest_block(tags, self.fsm.extrinsic_mtx)
-                if(self.closest_distance > closest_at_angle[1]):
+                if self.closest_distance > closest_at_angle[1] and closest_at_angle[3] != 7:
                     self.closest_tag = closest_at_angle[2]
                     self.closest_angle = closest_at_angle[0]+ PI/STEP*self.current_step #self.fsm.slam_pose[2]
                     self.closest_tag_number = closest_at_angle[3]
@@ -69,11 +68,11 @@ class spin_state():
             self.fsm.get_mbot_feedback()
             self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
             self.state = 'idle'
-            time.sleep(5)
+            time.sleep(2)
 
     def begin_task(self):
         print("begin spinning")
-        self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+        self.fsm.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.state = 'watch'
         self.current_step = 0
         self.start_theta = self.fsm.slam_pose[2]

@@ -207,8 +207,8 @@ class StateMachine():
             partial = 1
         temp_theta = self.slam_pose[2]
         print("current theta:", temp_theta)
-        print("current block pose in arm:", block_pose[0], block_pose[1])
         print("current SLAM pose:", self.slam_pose[0], self.slam_pose[1])
+        print("current block pose in arm:", block_pose[0], block_pose[1])
         tar_x = self.slam_pose[0] + partial*block_pose[0] * np.sin(temp_theta) + partial*block_pose[1] * np.cos(temp_theta)
         tar_y = self.slam_pose[1] + partial*block_pose[1] * np.sin(temp_theta) - partial*block_pose[0] * np.cos(temp_theta)
         print("Kun's block pose in world:", tar_x, tar_y)
