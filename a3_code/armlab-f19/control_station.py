@@ -186,7 +186,9 @@ class TaskThread(QThread):
             print("Run and Pick!")
             self.state_machine.set_current_state("pickup_1x1_block")
         elif self.task_num == 4:
-            pass
+            print("pick up 3x1 block")
+            self.state_machine.set_current_state("pickup_3x1_block")
+
 
 class DisplayThread(QThread):
     updateStatusMessage = pyqtSignal(str)
@@ -253,6 +255,7 @@ class Gui(QMainWindow):
         self.ui.btn_task1.clicked.connect(partial(self.taskThread.set_task_num, 1))
         self.ui.btn_task2.clicked.connect(partial(self.taskThread.set_task_num, 2))
         self.ui.btn_task3.clicked.connect(partial(self.taskThread.set_task_num, 3))
+        self.ui.btn_task4.clicked.connect(partial(self.taskThread.set_task_num, 4))
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)

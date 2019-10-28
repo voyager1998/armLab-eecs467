@@ -3,7 +3,7 @@ import time
 from util.our_utils import *
 
 PI = 3.141592
-STEP = 2
+STEP = 6
 
 # sample structure for a complex task
 class spin_state():

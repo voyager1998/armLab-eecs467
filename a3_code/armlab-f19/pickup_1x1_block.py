@@ -44,8 +44,8 @@ class pickup_1x1_block():
                 # self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
                 self.current_step = 0
                 return
-
-            new_location = locate_1x1_block(self.fsm.tags[0], self.fsm.extrinsic_mtx)
+            target_tag = find_closest_tag(self.fsm.tags, self.fsm.extrinsic_mtx)
+            new_location = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
             print("block location received")
             time.sleep(3)
             print("start picking")
@@ -102,7 +102,7 @@ class pickup_1x1_block():
                     self.closest_distance = closest_at_angle[1]
                 if self.closest_tag_number != -1:
                     print("found the tag")
-                    target_tag = self.fsm.tags[0]  # TODO: use closest_tag fxn to find this tag
+                    target_tag = find_closest_tag(self.fsm.tags, self.fsm.extrinsic_mtx)
                     target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
                     block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
                     self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
@@ -135,7 +135,7 @@ class pickup_1x1_block():
                 # self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
                 self.current_step = 0
                 return
-            target_tag = self.fsm.tags[0]  # TODO: use closest_tag fxn to find this tag
+            target_tag = find_closest_tag(self.fsm.tags, self.fsm.extrinsic_mtx)
             target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
             block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
             if pick_1x1_block(self.fsm.rexarm, block_pose) == 0:
@@ -167,7 +167,7 @@ class pickup_1x1_block():
             # self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
             self.current_step = 0
         else:
-            target_tag = self.fsm.tags[0]  # TODO: use closest_tag fxn to find this tag
+            target_tag = find_closest_tag(self.fsm.tags, self.fsm.extrinsic_mtx)
             target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
             block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
             self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
