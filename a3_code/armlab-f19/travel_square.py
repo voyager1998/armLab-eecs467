@@ -26,4 +26,5 @@ class travel_square():
 
     def begin_task(self):
         self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+        index = 0
         self.state = "move_to_waypoint"
