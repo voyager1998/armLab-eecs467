@@ -219,7 +219,7 @@ pose_xyt_t ParticleFilter::estimatePosteriorPose(const std::vector<particle_t>& 
         pose.y += i.weight * i.pose.y;
         pose.theta = wrap_to_pi(pose.theta + i.weight * i.pose.theta);
     }
-    std::cout << "Current Slam pose: " << pose.x << ", " << pose.y << ", " << pose.theta << std::endl;
+    // std::cout << "Current Slam pose: " << pose.x << ", " << pose.y << ", " << pose.theta << std::endl;
     return pose;
 }
 

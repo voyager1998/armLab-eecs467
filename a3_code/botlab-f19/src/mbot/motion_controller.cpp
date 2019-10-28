@@ -102,8 +102,8 @@ public:
 
                 double targetHeading = target.theta;
                 double error = angle_diff(targetHeading, pose.theta);
-                std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
-                std::cout << "Angle error:" << error << '\n';
+                // std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
+                // std::cout << "Angle error:" << error << '\n';
 
                 if (std::abs(error) > 0.05)  // turn in place until pointed approximately at the target
                 {
@@ -132,12 +132,12 @@ public:
 
                     // Turn left if the target is to the left
                     if (error > 0.0) {
-                        std::cout << "Turning left\n";
+                        // std::cout << "Turning left\n";
                     }
                     // Turn right if the target is to the right
                     else  // if(error < 0.0)
                     {
-                        std::cout << "Turning right\n";
+                        // std::cout << "Turning right\n";
                     }
                     cmd.trans_v = 0;
                     cmd.angular_v = turnspeed;
@@ -188,12 +188,12 @@ public:
             
             double targetHeading = std::atan2(target.y - pose.y, target.x - pose.x);
             double error = angle_diff(targetHeading, pose.theta);
-            std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
-            std::cout << "Angle error:" << error << '\n';
+            // std::cout << "target theta: " << targetHeading << ", current theta: " << pose.theta << std::endl;
+            // std::cout << "Angle error:" << error << '\n';
 
             if(state_ == TURN)
             {
-                std::cout << "I'M TURNING" << '\n';
+                // std::cout << "I'M TURNING" << '\n';
                 if(std::abs(error) > 0.05) // turn in place until pointed approximately at the target
                 {
 
@@ -223,12 +223,12 @@ public:
                     // Turn left if the target is to the left
                     if(error > 0.0)
                     {
-                        std::cout << "Turning left\n";
+                        // std::cout << "Turning left\n";
                     }
                     // Turn right if the target is to the right
                     else // if(error < 0.0)
                     {
-                        std::cout << "Turning right\n";
+                        // std::cout << "Turning right\n";
                     }
                     cmd.trans_v = 0;
                     cmd.angular_v = turnspeed;
@@ -246,7 +246,7 @@ public:
             }
             else if(state_ == DRIVE) // Use feedback to drive to the target once approximately pointed in the correct direction
             {
-                std::cout << "I'M DRIVING" << '\n';
+                // std::cout << "I'M DRIVING" << '\n';
                 double speed = kDesiredSpeed;
 
                 float distToGoal = std::sqrt(std::pow(target.x - pose.x, 2.0f) + std::pow(target.y - pose.y, 2.0f));

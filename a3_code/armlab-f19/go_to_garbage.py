@@ -57,7 +57,7 @@ class go_to_garbage():
                 print("what the hell: ", self.original_position)
                 if self.index_to_return - 1 == self.original_position:
                     print("RETURNED")
-                    self.fsm.set_current_state("done")
+                    self.fsm.set_current_state("spin_state")
                 else:
                     self.state = "move_to_waypoint"
             if self.state == "move_to_waypoint":

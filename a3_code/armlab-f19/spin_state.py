@@ -3,7 +3,7 @@ import time
 from util.our_utils import *
 
 PI = 3.141592
-STEP = 2
+STEP = 6
 
 # sample structure for a complex task
 class spin_state():
@@ -17,6 +17,8 @@ class spin_state():
         self.closest_angle = 0
         self.closest_tag_number = -1
         self.start_theta = 0
+        self.tag_1_count = 0
+        self.found_tag = False
 
     def operate_task(self):
         if self.state == 'idle':
@@ -37,11 +39,14 @@ class spin_state():
             time.sleep(3)
             self.fsm.get_mbot_feedback()
             if self.current_step >= STEP * 2:
-                self.state = 'face_to_closest'
                 print("---------------finish one round---------------")
                 if self.closest_tag_number == -1:
                     print("No block in sight")
+                    self.state = 'idle'
+                    self.fsm.set_current_state('travel_square')
                     return
+
+                self.state = 'face_to_closest'
 
                 print("closest angle:", self.closest_angle)
                 print("closest block id:", self.closest_tag_number)
@@ -53,12 +58,30 @@ class spin_state():
                 tags = self.fsm.tags
                 for tag in tags:
                     print("see tag", tag.tag_id)
+                    self.found_tag = True
+                    temp = 0
+                    if(tag.tag_id == 1):
+                        temp += 1
+                    if temp > self.tag_1_count:
+                        self.tag_1_count = temp
                 closest_at_angle = find_closest_block(tags, self.fsm.extrinsic_mtx)
                 if self.closest_distance > closest_at_angle[1] and closest_at_angle[3] != 7:
                     self.closest_tag = closest_at_angle[2]
                     self.closest_angle = closest_at_angle[0]+ PI/STEP*self.current_step #self.fsm.slam_pose[2]
                     self.closest_tag_number = closest_at_angle[3]
                     self.closest_distance = closest_at_angle[1]
+                
+                # Make the robot grasp the first block it sees, to pick the closest, just comment out these lines
+                if self.closest_tag_number != -1:
+                    self.fsm.get_mbot_feedback()
+                    self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+                    self.state = 'idle'
+                    time.sleep(2)
+                    if self.closest_tag_number == 1:
+                        self.fsm.set_current_state('pickup_3x1_block')
+                    else:
+                        self.fsm.set_current_state('pickup_1x1_block')
+
                 self.state = 'spin'
                 print("current step", self.current_step)
                 self.current_step += 1
@@ -69,13 +92,28 @@ class spin_state():
             self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
             self.state = 'idle'
             time.sleep(2)
+            if self.closest_tag_number == 1:
+                self.fsm.set_current_state('pickup_3x1_block')
+            else:
+                self.fsm.set_current_state('pickup_1x1_block')
+
 
     def begin_task(self):
         print("begin spinning")
+        self.state = 'idle'
+        self.fsm.get_mbot_feedback()
         self.fsm.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.state = 'watch'
         self.current_step = 0
         self.start_theta = self.fsm.slam_pose[2]
+        self.tag_7_count = 0
+        self.found_tag = False
+        self.closest_tag = []
+        self.closest_distance = 9999
+        self.closest_angle = 0
+        self.closest_tag_number = -1
+        self.tag_1_count = 0
+
 
     def face_closest(self):
         self.fsm.moving_mbot((self.fsm.slam_pose[0], self.fsm.slam_pose[1], self.closest_angle), 1)

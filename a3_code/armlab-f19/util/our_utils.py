@@ -286,6 +286,16 @@ def find_closest_block(tags, extrinsic_mtx):
     angle = np.arctan2(-closest_pose[0], closest_pose[1])
     return (angle, euclidian_distance(closest_pose[0], closest_pose[1], 0, 0), closest_pose, closest_tag_id)
 
+def find_closest_tag(tags, extrinsic_mtx):
+    closest_pose = [9999, 9999]
+    result_tag = None
+    for tag in tags:
+        current_pose = from_AprilTag_to_pose(tag, extrinsic_mtx)
+        if(euclidian_distance(closest_pose[0], closest_pose[1], 0, 0) > euclidian_distance(current_pose[0], current_pose[1], 0, 0)):
+            closest_pose = current_pose
+            result_tag = tag
+    return result_tag
+    
 def normalize_angle(angle):
     newAngle = angle
     while newAngle <= -PI: newAngle += 2*PI

@@ -55,10 +55,10 @@ class StateMachine():
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)
-        self.pickup_3x1_block = pickup_3x1_block(self)
         self.pickup_corner_block = pickup_corner_block(self)
         self.travel_square = travel_square(self)
         self.spin_state = spin_state(self)
+        self.pickup_3x1_block = pickup_3x1_block(self, travel_square)
         self.go_to_garbage = go_to_garbage(self, travel_square)
 
     def set_current_state(self, state):
@@ -97,14 +97,16 @@ class StateMachine():
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
 
-            if self.current_state in ['spin_state'] and state_obj.state == 'idle':
-                time.sleep(5)
-                # temp_pose = self.slam_pose
-                # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)
-                # if (self.mbot_status == mbot_status_t.STATUS_COMPLETE):
-                #     self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2]), 1)
-                self.set_current_state('pickup_1x1_block')
-
+            # if self.current_state in ['spin_state'] and state_obj.state == 'idle':
+            #     time.sleep(5)
+            #     # temp_pose = self.slam_pose
+            #     # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)
+            #     # if (self.mbot_status == mbot_status_t.STATUS_COMPLETE):
+            #     #     self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2]), 1)
+            #     if state_obj.tag_1_count <= 1:
+            #         self.set_current_state('pickup_1x1_block')
+            #     else:
+            #         self.set_current_state('pickup_3x1_block')
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
                
