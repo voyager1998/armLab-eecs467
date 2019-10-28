@@ -6,7 +6,6 @@ from lcmtypes import mbot_status_t
 PICK_RANGE = 0.15
 PI = 3.141592
 STEP = 18
-RANGE = 1
 
 # sample structure for a complex task
 class pickup_1x1_block():
@@ -19,6 +18,7 @@ class pickup_1x1_block():
         self.closest_angle = 0
         self.closest_tag_number = -1
         self.start_theta = 0
+        self.step_range = 1
 
     def operate_task(self):
         if self.state == 'idle':
@@ -38,7 +38,7 @@ class pickup_1x1_block():
             self.fsm.get_mbot_feedback()
             if not self.fsm.tags:
                 self.state = 'scan'
-                self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * RANGE)
+                self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
                 self.current_step = 0
                 return
 
@@ -48,7 +48,7 @@ class pickup_1x1_block():
             print("start picking")
             if pick_1x1_block(self.fsm.rexarm, new_location) == 0:
                 self.state = 'scan'
-                self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * RANGE)
+                self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
                 self.current_step = 0
             else:
                 self.state = 'idle'
@@ -60,15 +60,14 @@ class pickup_1x1_block():
             normalizedAngle = normalize_angle(self.start_theta + PI/STEP*self.current_step)
             # print("target angle:", normalizedAngle)
             self.fsm.moving_mbot((self.fsm.slam_pose[0], self.fsm.slam_pose[1], normalizedAngle), 1)
-            if self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
-                print("scanned to desired pose")
-                self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
-                self.state = 'watch'
+            self.state = 'watch'
 
-        if self.state == 'watch':
+        if self.state == 'watch' and self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
+            print("scanned to desired pose")
+            self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
             # print("in watch state")
-            time.sleep(3)
-            if self.current_step >= RANGE * 2:
+            time.sleep(6)
+            if self.current_step >= self.step_range * 2:
                 self.state = 'face_to_closest'
                 print("---------------finish one round---------------")
                 if self.closest_tag_number == -1:
@@ -91,24 +90,42 @@ class pickup_1x1_block():
                 for tag in tags:
                     print("see tag", tag.tag_id)
                 closest_at_angle = find_closest_block(tags, self.fsm.extrinsic_mtx)
-                if(self.closest_distance > closest_at_angle[1]):
+                if self.closest_distance > closest_at_angle[1] and closest_at_angle[3] != 7:
                     self.closest_tag = closest_at_angle[2]
                     self.closest_angle = closest_at_angle[0]+ PI/STEP*self.current_step #self.fsm.slam_pose[2]
                     self.closest_tag_number = closest_at_angle[3]
                     self.closest_distance = closest_at_angle[1]
-                self.state = 'scan'
-                print("current step", self.current_step)
-                self.current_step += 1
+                if self.closest_tag_number != -1:
+                    print("found the tag")
+                    target_tag = self.fsm.tags[0]  # TODO: use closest_tag fxn to find this tag
+                    target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
+                    block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
+                    self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+                    if pick_1x1_block(self.fsm.rexarm, block_pose) == 0:
+                        print("block is far away")
+                        print("current SLAM pose:", self.fsm.slam_pose[0], self.fsm.slam_pose[1], self.fsm.slam_pose[2])
+                        self.fsm.moving_mbot_to_block(target_pose)
+                        self.state = 'moving_to_closest'
+                    else:# Successfully picked up the block!!!
+                        self.state = 'idle'
+                        self.fsm.set_current_state('go_to_garbage')
+                else:
+                    self.state = 'scan'
+                    print("current step", self.current_step)
+                    self.current_step += 1
 
         if self.state == 'face_to_closest' and self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
             print("Turned to facing block")
-            time.sleep(2)
+            time.sleep(5)
             self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
             self.fsm.get_mbot_feedback()
             if not self.fsm.tags:
                 print("still no tag in sight")
                 self.fsm.mbot_status = mbot_status_t.STATUS_COMPLETE
-                # self.state = 'idle'
+                self.state = 'scan'
+                self.step_range += 1
+                self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
+                self.current_step = 0
                 return
             target_tag = self.fsm.tags[0]  # TODO: use closest_tag fxn to find this tag
             target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
@@ -119,7 +136,6 @@ class pickup_1x1_block():
                 self.state = 'moving_to_closest'
             else:
                 self.state = 'idle'
-            time.sleep(5)
 
 
     def begin_task(self):
@@ -130,7 +146,7 @@ class pickup_1x1_block():
         if not self.fsm.tags:
             print("no tag detected")
             self.state = 'scan'
-            self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * RANGE)
+            self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
             self.current_step = 0
         else:
             target_tag = self.fsm.tags[0]  # TODO: use closest_tag fxn to find this tag

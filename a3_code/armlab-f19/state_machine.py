@@ -55,10 +55,10 @@ class StateMachine():
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)
+        self.pickup_3x1_block = pickup_3x1_block(self)
         self.pickup_corner_block = pickup_corner_block(self)
         self.travel_square = travel_square(self)
         self.spin_state = spin_state(self)
-        self.pickup_3x1_block = pickup_3x1_block(self, travel_square)
         self.go_to_garbage = go_to_garbage(self, travel_square)
 
     def set_current_state(self, state):
@@ -207,6 +207,7 @@ class StateMachine():
             partial = 1
         temp_theta = self.slam_pose[2]
         print("current theta:", temp_theta)
+        print("current SLAM pose:", self.slam_pose[0], self.slam_pose[1])
         print("current block pose in arm:", block_pose[0], block_pose[1])
         tar_x = self.slam_pose[0] + partial*block_pose[0] * np.sin(temp_theta) + partial*block_pose[1] * np.cos(temp_theta)
         tar_y = self.slam_pose[1] + partial*block_pose[1] * np.sin(temp_theta) - partial*block_pose[0] * np.cos(temp_theta)
