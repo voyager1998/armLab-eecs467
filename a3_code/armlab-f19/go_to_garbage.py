@@ -74,6 +74,7 @@ class go_to_garbage():
                 self.state = "moving_in_square"
 
     def begin_task(self):
+        print("Go to Garbage")
         self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
         self.square_queue = self.travel_square.square_queue
         self.original_position = self.travel_square.index
