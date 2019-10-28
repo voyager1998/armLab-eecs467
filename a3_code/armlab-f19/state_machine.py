@@ -33,6 +33,7 @@ class StateMachine():
         self.tags = []
         self.status_message = "State: Idle"
         self.current_state = "idle"
+        self.image = None
 
         self.lc = lcm.LCM()
         lcmSLAMPoseSub = self.lc.subscribe("SLAM_POSE", self.slampose_feedback_handler)
@@ -52,6 +53,10 @@ class StateMachine():
         tvec = [[-0.00106227],[ 0.08470473],[-0.02910629]]
         # extrinsic_mtx translates from points in camera frame to world frame
         self.extrinsic_mtx = np.linalg.inv(rot_tran_to_homo(rotation_matrix, tvec))
+        self.intrinsic_mtx = cameraMatrix = np.array([[596.13380911,   0,         322.69869837],
+                                [0,         598.59497209, 232.09155051],
+                                [0,           0,           1        ]])
+        self.recent_color = None
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)
@@ -63,8 +68,9 @@ class StateMachine():
 
     def set_current_state(self, state):
         self.current_state = state
-        state_obj = getattr(self, state)
-        state_obj.begin_task()
+        if state not in ['manual', 'idle', 'estop', 'calibrate', 'moving_arm', 'moving_mbot']:
+            state_obj = getattr(self, state)
+            state_obj.begin_task()
 
     """ This function is run continuously in a thread"""
 
@@ -181,11 +187,11 @@ class StateMachine():
         self.publish_mbot_command(mbot_command_t.STATE_MOVING,
                 (target_pose_world[0], target_pose_world[1], target_pose_world[2]), [], is_mode_spin)
 
-    def moving_mbot_to_block(self, block_pose): # block_pose = [x, y, z] is the block pose in arm frame
+    DIST_TO_BLOCK = 0.12
+    def moving_mbot_to_block(self, block_pose, dist_to_block=DIST_TO_BLOCK): # block_pose = [x, y, z] is the block pose in arm frame
         """TODO: Implement this function"""
         if self.slam_pose == None:
             self.slam_pose = [0, 0, 0]
-        DIST_TO_BLOCK = 0.12
         # mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
         #                             [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
         #                             [0,0,1,0],

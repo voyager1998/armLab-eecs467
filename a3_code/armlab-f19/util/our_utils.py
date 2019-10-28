@@ -56,6 +56,37 @@ def pick_1x1_block(rexarm, endpoint):
         rexarm.set_positions(set_positions, update_now = True)
         time.sleep(1)
 
+def pick_1x1_block_for_corner(rexarm, endpoint, initial_joints):
+    print("begin picking up 1x1 block!")
+    #Get to block
+    GRASP_OFFSET = 0.02
+    endpoint[0] += endpoint[0] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[1] += endpoint[1] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[2] += 0.003
+    
+    for phi in range(-90, -19, 10):
+        endpoint[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
+        if joint_positions_endpoint != None:
+            break
+    if joint_positions_endpoint is None:
+        return 0
+
+    if initial_joints is None:
+        set_positions = [0] * 5
+    else:
+        set_positions = initial_joints
+    
+    set_positions[4] = -15*D2R # open gripper
+
+    set_positions[0] = joint_positions_endpoint[0]
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+    for i in range(len(joint_positions_endpoint) - 1, 0, -1):
+        set_positions[i] = joint_positions_endpoint[i]
+        rexarm.set_positions(set_positions, update_now = True)
+        time.sleep(1.5)
+
     print("got here")
     #rexarm.close_gripper()
     
@@ -64,13 +95,80 @@ def pick_1x1_block(rexarm, endpoint):
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
-    set_erect(rexarm)
-    time.sleep(6)
-    
-    set_snake(rexarm, GRIPPER_CLOSE)
-    time.sleep(3)
+# INITIAL_POSITION_FOR_SMACK = [0, 0.15, 2.5*I2M, -45]
+def prepare_for_probe(rexarm, initial_position):
+    initial_position = initial_position.copy()
+    for phi in range(-20, -91, -10):
+        initial_position[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+        if joint_positions_endpoint != None:
+            break
+    print('IK returned: ',joint_positions_endpoint)
+    joint_positions_endpoint += [20]
+    rexarm.set_positions(joint_positions_endpoint, update_now = True)
+    time.sleep(5)
 
-    return 1
+def smack_dat_corner_block(rexarm, initial_position):
+    initial_position = initial_position.copy()
+    initial_position[2] = 1.85*I2M
+    print("begin picking up corner block!")
+    joint_positions_endpoint = None
+    for phi in range(-20, -91, -10):
+        initial_position[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+        # print(joint_positions_endpoint, initial_position)
+        if joint_positions_endpoint != None:
+            break
+    joint_positions_endpoint += [20]
+    rexarm.set_positions(joint_positions_endpoint, update_now = True)
+    time.sleep(5)
+
+    # scape arm back
+    SCRAPE_STEPS = 10
+    for i in range(1, SCRAPE_STEPS + 1):
+        initial_position[1] = initial_position[1] - 2.5 * I2M / SCRAPE_STEPS
+        print("SCRAPE STEP: ", i, initial_position)
+        for phi in range(-20, -91, -10):
+            initial_position[3] = phi
+            joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+            if joint_positions_endpoint != None:
+                break
+        joint_positions_endpoint += [20]
+        rexarm.set_positions(joint_positions_endpoint, update_now = True)
+        time.sleep(1)
+    print('done scraping')    
+    return joint_positions_endpoint
+
+def unfuck_snake(rexarm):
+    set_positions = [0] * 5
+    set_positions[0] = 0 * D2R
+    set_positions[1] = 0 * D2R
+    set_positions[2] = -90 * D2R
+    set_positions[3] = -90 * D2R
+    set_positions[4] = GRIPPER_CLOSE
+
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(2)
+
+def detectColor(fsm, rgb_image):
+    # print("calculating the color")
+    if len(fsm.tags) == 0:
+        return None
+    tag = fsm.tags[0]
+    pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
+    intr = np.append(fsm.intrinsic_mtx, np.zeros((3,1)), axis=1)
+    tag_to_pixel = np.dot(intr, pose_homo)
+    pixel_top = np.dot(tag_to_pixel, np.array([I2M/2, 0, 0, 1])).reshape(3,)
+    pixel_bottom = np.dot(tag_to_pixel, np.array([-I2M/2, 0, 0, 1])).reshape(3,)
+
+    pixel_top = pixel_top / pixel_top[2]
+    pixel_bottom = pixel_bottom / pixel_bottom[2]
+    # hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV)
+    # hsv_top = hsv_image[pixel_top[1], pixel_top[0]]
+    # hsv_bottom = hsv_image[pixel_bottom[1], pixel_bottom[0]]
+    # fsm.recent_color = fsm.hue_to_classification(hsv[0])
+    # print(self.fsm.recent_color)
+    print('PIXELS: ', pixel_top, pixel_bottom)
 
 def set_erect(rexarm, gripper=GRIPPER_CLOSE):
     # return home
