@@ -33,6 +33,7 @@ class StateMachine():
         self.tags = []
         self.status_message = "State: Idle"
         self.current_state = "idle"
+        self.image = None
 
         self.lc = lcm.LCM()
         lcmSLAMPoseSub = self.lc.subscribe("SLAM_POSE", self.slampose_feedback_handler)
@@ -52,6 +53,10 @@ class StateMachine():
         tvec = [[-0.00106227],[ 0.08470473],[-0.02910629]]
         # extrinsic_mtx translates from points in camera frame to world frame
         self.extrinsic_mtx = np.linalg.inv(rot_tran_to_homo(rotation_matrix, tvec))
+        self.intrinsic_mtx = cameraMatrix = np.array([[596.13380911,   0,         322.69869837],
+                                [0,         598.59497209, 232.09155051],
+                                [0,           0,           1        ]])
+        self.recent_color = None
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)

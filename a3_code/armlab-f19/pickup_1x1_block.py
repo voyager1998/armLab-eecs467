@@ -105,6 +105,7 @@ class pickup_1x1_block():
                     target_tag = find_closest_tag(self.fsm.tags, self.fsm.extrinsic_mtx)
                     target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
                     block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
+                    # detectColor(self.fsm, self.fsm.image)
                     self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
                     if pick_1x1_block(self.fsm.rexarm, block_pose) == 0:
                         print("block is far away")

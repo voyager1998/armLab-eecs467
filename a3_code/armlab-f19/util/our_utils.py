@@ -56,8 +56,6 @@ def pick_1x1_block(rexarm, endpoint):
         rexarm.set_positions(set_positions, update_now = True)
         time.sleep(1)
 
-
-
 def pick_1x1_block_for_corner(rexarm, endpoint, initial_joints):
     print("begin picking up 1x1 block!")
     #Get to block
@@ -152,6 +150,25 @@ def unfuck_snake(rexarm):
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(2)
 
+def detectColor(fsm, rgb_image):
+    # print("calculating the color")
+    if len(fsm.tags) == 0:
+        return None
+    tag = fsm.tags[0]
+    pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
+    intr = np.append(fsm.intrinsic_mtx, np.zeros((3,1)), axis=1)
+    tag_to_pixel = np.dot(intr, pose_homo)
+    pixel_top = np.dot(tag_to_pixel, np.array([I2M/2, 0, 0, 1])).reshape(3,)
+    pixel_bottom = np.dot(tag_to_pixel, np.array([-I2M/2, 0, 0, 1])).reshape(3,)
+
+    pixel_top = pixel_top / pixel_top[2]
+    pixel_bottom = pixel_bottom / pixel_bottom[2]
+    # hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV)
+    # hsv_top = hsv_image[pixel_top[1], pixel_top[0]]
+    # hsv_bottom = hsv_image[pixel_bottom[1], pixel_bottom[0]]
+    # fsm.recent_color = fsm.hue_to_classification(hsv[0])
+    # print(self.fsm.recent_color)
+    print('PIXELS: ', pixel_top, pixel_bottom)
 
 def set_erect(rexarm, gripper=GRIPPER_CLOSE):
     # return home

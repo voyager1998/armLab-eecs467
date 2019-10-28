@@ -51,6 +51,7 @@ class VideoThread(QThread):
     # That way you will be emit for images to visualize for debugging.
     updateFrame = pyqtSignal(list)
     updateAprilTags = pyqtSignal(list)
+    updateImage = pyqtSignal(list)
 
     def __init__(self, camera, parent=None):
         QThread.__init__(self, parent=parent) 
@@ -88,6 +89,7 @@ class VideoThread(QThread):
             block_image = self.detect_block(image)
             self.updateFrame.emit([image, apriltag_image, block_image])
             self.updateAprilTags.emit(tags)
+            self.updateImage.emit([image])
             self.rawCapture.truncate(0)
 
     def detect_apriltag(self, gray_image):
@@ -281,6 +283,7 @@ class Gui(QMainWindow):
         self.videoThread = VideoThread(self.camera)
         self.videoThread.updateFrame.connect(self.setImage)
         self.videoThread.updateAprilTags.connect(self.updateAprilTags)
+        self.videoThread.updateImage.connect(self.updateImage)
         self.videoThread.start()
 
         
@@ -329,6 +332,11 @@ class Gui(QMainWindow):
     def updateAprilTags(self, tags):
         # print('UPDATING APRIL TAGS')
         self.sm.tags = tags
+
+    @pyqtSlot(list)
+    def updateImage(self, image):
+        self.sm.image = image
+        # detectColor(self.sm, self.sm.image)
 
     @pyqtSlot(list)
     def updateJointReadout(self, joints):
