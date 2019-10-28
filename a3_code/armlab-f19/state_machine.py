@@ -102,8 +102,11 @@ class StateMachine():
                 # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)
                 # if (self.mbot_status == mbot_status_t.STATUS_COMPLETE):
                 #     self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2]), 1)
-                self.set_current_state('pickup_1x1_block')
-
+                if state_obj.tag_1_count <= 1:
+                    self.set_current_state('pickup_1x1_block')
+                else:
+                    self.set_current_state('pickup_3x1_block')
+            else if 
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
                
