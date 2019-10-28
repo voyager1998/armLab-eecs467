@@ -55,10 +55,10 @@ class StateMachine():
 
         self.mbot_status = mbot_status_t.STATUS_COMPLETE
         self.pickup_1x1_block = pickup_1x1_block(self)
-        self.pickup_3x1_block = pickup_3x1_block(self)
         self.pickup_corner_block = pickup_corner_block(self)
         self.travel_square = travel_square(self)
         self.spin_state = spin_state(self)
+        self.pickup_3x1_block = pickup_3x1_block(self, travel_square)
         self.go_to_garbage = go_to_garbage(self, travel_square)
 
     def set_current_state(self, state):
