@@ -176,21 +176,19 @@ class TaskThread(QThread):
     def set_task_num(self, task_num):
         self.task_num = task_num
         if self.task_num == 1:
-            print("Start picking block!")
-            block_pose = locate_1x1_block(self.state_machine.tags[0], self.state_machine.extrinsic_mtx)
-            self.task5.begin_task(block_pose)
+            print("Start spinning")
+            self.state_machine.set_current_state('spin_state')
         elif self.task_num == 2:
-            # print("Setting to snake pose")
-            set_snake(self.state_machine.rexarm)
-            # self.state_machine.set_current_state('spin_state')
-            # self.spin_state.begin_task()
+            print("Run and Pick 1x1 block!")
+            self.state_machine.set_current_state("pickup_1x1_block")
         elif self.task_num == 3:
-            print("Run and Pick!")
-            # self.state_machine.set_current_state("pickup_1x1_block")
-            self.state_machine.set_current_state("pickup_corner_block")
-        elif self.task_num == 4:
-            print("pick up 3x1 block")
+            print("Start picking up 3x1 block")
             self.state_machine.set_current_state("pickup_3x1_block")
+        elif self.task_num == 4:
+            self.state_machine.set_current_state("go_to_garbage")
+            # print("Start picking block!")
+            # block_pose = locate_1x1_block(self.state_machine.tags[0], self.state_machine.extrinsic_mtx)
+            # self.task5.begin_task(block_pose)
 
 
 class DisplayThread(QThread):
