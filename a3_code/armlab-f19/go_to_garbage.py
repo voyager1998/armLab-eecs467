@@ -40,7 +40,11 @@ class go_to_garbage():
                 self.state = "moving_in_square"
             if self.state == "reached_garbage":
                 print("Move to garbage can")
-                self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (-0.15, 0, self.PI), [], False)
+                trash = ["red", "green", "orange"]
+                if self.fsm.recent_color in trash:
+                    self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (-0.15, -0.30, self.PI), [], False)
+                else:
+                    self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (-0.15, 0, self.PI), [], False)
                 self.fsm.mbot_status = 0
                 self.state = "dropped_garbage"
             if self.state == "dropped_garbage" and self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:

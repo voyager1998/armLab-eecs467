@@ -49,6 +49,8 @@ class pickup_1x1_block():
             print("block location received")
             time.sleep(3)
             print("start picking")
+            self.fsm.recent_color = detectColor(target_tag, self.fsm, self.fsm.rgb_image)
+            print('Picking color: ', self.fsm.recent_color)
             if pick_1x1_block(self.fsm.rexarm, new_location) == 0:
                 self.state = 'scan'
                 # self.start_theta = normalize_angle(self.fsm.slam_pose[2] - PI / STEP * self.step_range)
@@ -107,6 +109,10 @@ class pickup_1x1_block():
                     block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
                     # detectColor(self.fsm, self.fsm.image)
                     self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+
+                    self.fsm.recent_color = detectColor(target_tag, self.fsm, self.fsm.rgb_image)
+                    print('Picking color: ', self.fsm.recent_color)
+
                     if pick_1x1_block(self.fsm.rexarm, block_pose) == 0:
                         print("block is far away")
                         print("current SLAM pose:", self.fsm.slam_pose[0], self.fsm.slam_pose[1], self.fsm.slam_pose[2])
@@ -139,6 +145,8 @@ class pickup_1x1_block():
             target_tag = find_closest_tag(self.fsm.tags, self.fsm.extrinsic_mtx)
             target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
             block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
+            color = detectColor(target_tag, self.fsm, self.fsm.rgb_image)
+            print('Picking color: ', color)
             if pick_1x1_block(self.fsm.rexarm, block_pose) == 0:
                 print("block is far away")
                 self.fsm.moving_mbot_to_block(target_pose)
@@ -172,6 +180,9 @@ class pickup_1x1_block():
             target_pose = from_AprilTag_to_pose(target_tag, self.fsm.extrinsic_mtx)
             block_pose = locate_1x1_block(target_tag, self.fsm.extrinsic_mtx)
             self.fsm.mbot_status = mbot_status_t.STATUS_IN_PROGRESS
+
+            color = detectColor(target_tag, self.fsm, self.fsm.rgb_image)
+            print('Picking color: ', color)
             if pick_1x1_block(self.fsm.rexarm, block_pose) == 0:
                 print("block is far away")
                 print("current SLAM pose:", self.fsm.slam_pose[0], self.fsm.slam_pose[1], self.fsm.slam_pose[2])

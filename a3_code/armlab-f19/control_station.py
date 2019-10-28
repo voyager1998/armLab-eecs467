@@ -322,6 +322,8 @@ class Gui(QMainWindow):
         if(self.ui.radioVideo.isChecked()):
             self.ui.videoDisplay.setPixmap(self.convertImage(rgb_image))
             self.rgb_image = rgb_image
+            self.sm.rgb_image = rgb_image
+
         if(self.ui.radioApril.isChecked()):
             self.ui.videoDisplay.setPixmap(self.convertImage(apriltag_image))
         if(self.ui.radioUsr1.isChecked()):
@@ -335,8 +337,9 @@ class Gui(QMainWindow):
 
     @pyqtSlot(list)
     def updateImage(self, image):
-        self.sm.image = image
+        # self.sm.image = image
         # detectColor(self.sm, self.sm.image)
+        pass
 
     @pyqtSlot(list)
     def updateJointReadout(self, joints):
@@ -422,24 +425,8 @@ class Gui(QMainWindow):
             hsv = hsv_image[y, x]
             # self.ui.rdoutRGB.setText("({},{},{})".format(*rgb))
             # self.ui.rdoutRGB.setText("({},{},{})".format(*hsv))
-            self.ui.rdoutRGB.setText(self.hue_to_classification(hsv[0]))
+            self.ui.rdoutRGB.setText(hue_to_classification(hsv[0]))
             print(hsv[0])
-    
-    # might do kmeans later so figured we might as well do the distance thing now
-    def hue_to_classification(self, hue):
-        hue = 2*hue*D2R
-        # R G B P O Y
-        colors = ['red', 'green', 'blue', 'purple', 'orange', 'yellow']
-        means = np.array([177.3, 75.67, 105.0, 132.833, 8.833, 28.83])
-        means = 2*means*D2R
-        min_dist = float('inf')
-        min_i = 0
-        for i,mean in enumerate(means):
-            dist = (np.cos(hue) - np.cos(mean))**2 + (np.sin(hue) - np.sin(mean))**2
-            if dist < min_dist:
-                min_dist = dist
-                min_i = i
-        return colors[min_i]
 
     def mousePressEvent(self, QMouseEvent):
         """ 

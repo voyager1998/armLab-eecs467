@@ -6,7 +6,7 @@ from lcmtypes import pose_xyt_t
 from lcmtypes import occupancy_grid_t
 from lcmtypes import mbot_status_t
 from lcmtypes import mbot_command_t
-
+import cv2
 
 PICK_RANGE = 0.2
 
@@ -150,11 +150,8 @@ def unfuck_snake(rexarm):
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(2)
 
-def detectColor(fsm, rgb_image):
+def detectColor(tag, fsm, rgb_image):
     # print("calculating the color")
-    if len(fsm.tags) == 0:
-        return None
-    tag = fsm.tags[0]
     pose_homo = rot_tran_to_homo(tag.pose_R, tag.pose_t)
     intr = np.append(fsm.intrinsic_mtx, np.zeros((3,1)), axis=1)
     tag_to_pixel = np.dot(intr, pose_homo)
@@ -163,12 +160,18 @@ def detectColor(fsm, rgb_image):
 
     pixel_top = pixel_top / pixel_top[2]
     pixel_bottom = pixel_bottom / pixel_bottom[2]
-    # hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV)
-    # hsv_top = hsv_image[pixel_top[1], pixel_top[0]]
-    # hsv_bottom = hsv_image[pixel_bottom[1], pixel_bottom[0]]
-    # fsm.recent_color = fsm.hue_to_classification(hsv[0])
-    # print(self.fsm.recent_color)
-    print('PIXELS: ', pixel_top, pixel_bottom)
+
+    if pixel_top[1] < pixel_bottom[1]:
+        color_pixel = pixel_top.flatten()
+    else:
+        color_pixel = pixel_bottom.flatten()
+    color_pixel[1] = color_pixel[1] - 15
+
+    hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV)
+    hsv = hsv_image[int(color_pixel[1]), int(color_pixel[0])]
+    color = hue_to_classification(hsv[0])
+    # print('PIXELS: ', pixel_top, pixel_bottom)
+    return color
 
 def set_erect(rexarm, gripper=GRIPPER_CLOSE):
     # return home
@@ -318,3 +321,20 @@ def normalize_angle(angle):
     while newAngle <= -PI: newAngle += 2*PI
     while newAngle > PI: newAngle -= 2*PI
     return newAngle
+
+# might do kmeans later so figured we might as well do the distance thing now
+def hue_to_classification(hue):
+    hue = 2*hue*D2R
+    # R G B P O Y
+    colors = ['red', 'green', 'blue', 'purple', 'orange', 'yellow']
+    # means = np.array([177.3, 75.67, 105.0, 132.833, 8.833, 28.83])
+    means = np.array([2.0, 69.0, 99.0, 170.0, 10.0, 28.5])
+    means = 2*means*D2R
+    min_dist = float('inf')
+    min_i = 0
+    for i,mean in enumerate(means):
+        dist = (np.cos(hue) - np.cos(mean))**2 + (np.sin(hue) - np.sin(mean))**2
+        if dist < min_dist:
+            min_dist = dist
+            min_i = i
+    return colors[min_i]
