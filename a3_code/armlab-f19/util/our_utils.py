@@ -56,6 +56,39 @@ def pick_1x1_block(rexarm, endpoint):
         rexarm.set_positions(set_positions, update_now = True)
         time.sleep(1)
 
+
+
+def pick_1x1_block_for_corner(rexarm, endpoint, initial_joints):
+    print("begin picking up 1x1 block!")
+    #Get to block
+    GRASP_OFFSET = 0.02
+    endpoint[0] += endpoint[0] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[1] += endpoint[1] / np.sqrt(endpoint[0]** 2 + endpoint[1]** 2) * GRASP_OFFSET
+    endpoint[2] += 0.003
+    
+    for phi in range(-90, -19, 10):
+        endpoint[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(endpoint)
+        if joint_positions_endpoint != None:
+            break
+    if joint_positions_endpoint is None:
+        return 0
+
+    if initial_joints is None:
+        set_positions = [0] * 5
+    else:
+        set_positions = initial_joints
+    
+    set_positions[4] = -15*D2R # open gripper
+
+    set_positions[0] = joint_positions_endpoint[0]
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+    for i in range(len(joint_positions_endpoint) - 1, 0, -1):
+        set_positions[i] = joint_positions_endpoint[i]
+        rexarm.set_positions(set_positions, update_now = True)
+        time.sleep(1.5)
+
     print("got here")
     #rexarm.close_gripper()
     
@@ -64,9 +97,9 @@ def pick_1x1_block(rexarm, endpoint):
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
-INITIAL_POSITION_FOR_SMACK = [0, 0.15, 2.5*I2M, -45]
-def prepare_for_probe(rexarm):
-    initial_position = INITIAL_POSITION_FOR_SMACK
+# INITIAL_POSITION_FOR_SMACK = [0, 0.15, 2.5*I2M, -45]
+def prepare_for_probe(rexarm, initial_position):
+    initial_position = initial_position.copy()
     for phi in range(-20, -91, -10):
         initial_position[3] = phi
         joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
@@ -77,15 +110,15 @@ def prepare_for_probe(rexarm):
     rexarm.set_positions(joint_positions_endpoint, update_now = True)
     time.sleep(5)
 
-def smack_dat_corner_block(rexarm):
-    initial_position = INITIAL_POSITION_FOR_SMACK.copy()
-    initial_position[2] = 1.8*I2M
+def smack_dat_corner_block(rexarm, initial_position):
+    initial_position = initial_position.copy()
+    initial_position[2] = 1.85*I2M
     print("begin picking up corner block!")
     joint_positions_endpoint = None
     for phi in range(-20, -91, -10):
         initial_position[3] = phi
         joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
-        print(joint_positions_endpoint, initial_position)
+        # print(joint_positions_endpoint, initial_position)
         if joint_positions_endpoint != None:
             break
     joint_positions_endpoint += [20]
@@ -106,6 +139,18 @@ def smack_dat_corner_block(rexarm):
         rexarm.set_positions(joint_positions_endpoint, update_now = True)
         time.sleep(1)
     print('done scraping')    
+    return joint_positions_endpoint
+
+def unfuck_snake(rexarm):
+    set_positions = [0] * 5
+    set_positions[0] = 0 * D2R
+    set_positions[1] = 0 * D2R
+    set_positions[2] = -90 * D2R
+    set_positions[3] = -90 * D2R
+    set_positions[4] = GRIPPER_CLOSE
+
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(2)
 
 
 def set_erect(rexarm, gripper=GRIPPER_CLOSE):
