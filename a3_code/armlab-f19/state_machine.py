@@ -196,7 +196,7 @@ class StateMachine():
         #                             [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
         #                             [0,0,1,0],
         #                             [0, 0, 0, 1]])
-        # rex_to_mbot = np.array([[0, 1,0,-DIST_TO_BLOCK],
+        # rex_to_mbot = np.array([[0, 1,0,-dist_to_block],
         #                         [-1,0,0,0],
         #                         [0, 0,1,0],
         #                         [0, 0,0,1]])
@@ -213,14 +213,14 @@ class StateMachine():
         if block_pose_world_y > 0.8 and block_pose_world_y < 1.2:
             if block_pose_world_x > 0:
                 print("this is a block near the wall")
-                return (block_pose_world_x, block_pose_world_y-DIST_TO_BLOCK-PICK_WALL_OFFSET)
+                return (block_pose_world_x, block_pose_world_y-dist_to_block-PICK_WALL_OFFSET)
             else:
                 print("this is a block in the corner")
-                return (block_pose_world_x+DIST_TO_BLOCK+PICK_WALL_OFFSET, block_pose_world_y-DIST_TO_BLOCK-PICK_WALL_OFFSET)
+                return (block_pose_world_x+dist_to_block+PICK_WALL_OFFSET, block_pose_world_y-dist_to_block-PICK_WALL_OFFSET)
 
         block_dist = np.sqrt(block_pose[0]** 2 + block_pose[1]** 2)
-        if block_dist > DIST_TO_BLOCK:
-            partial = (block_dist - DIST_TO_BLOCK) / block_dist
+        if block_dist > dist_to_block:
+            partial = (block_dist - dist_to_block) / block_dist
             print("partial = ", partial)
         else:
             partial = 1

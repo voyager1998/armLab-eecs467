@@ -56,6 +56,22 @@ def pick_1x1_block(rexarm, endpoint):
         rexarm.set_positions(set_positions, update_now = True)
         time.sleep(1)
 
+    print("got here")
+    #rexarm.close_gripper()
+    
+    # close gripper
+    set_positions[4] = GRIPPER_CLOSE
+    rexarm.set_positions(set_positions, update_now = True)
+    time.sleep(1)
+
+    set_erect(rexarm)
+    time.sleep(6)
+    
+    set_snake(rexarm, GRIPPER_CLOSE)
+    time.sleep(3)
+
+    return 1
+
 def pick_1x1_block_for_corner(rexarm, endpoint, initial_joints):
     print("begin picking up 1x1 block!")
     #Get to block
