@@ -96,18 +96,16 @@ class StateMachine():
             state_obj = getattr(self, self.current_state)
             state_obj.operate_task()
 
-            if self.current_state in ['spin_state'] and state_obj.state == 'idle':
-                time.sleep(5)
-                # temp_pose = self.slam_pose
-                # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)
-                # if (self.mbot_status == mbot_status_t.STATUS_COMPLETE):
-                #     self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2]), 1)
-                if state_obj.tag_1_count <= 1 and state_obj.found_tag:
-                    self.set_current_state('pickup_1x1_block')
-                else if state_obj.found_tag:
-                    self.set_current_state('pickup_3x1_block')
-                else:
-                    self.set_current_state('travel_square')
+            # if self.current_state in ['spin_state'] and state_obj.state == 'idle':
+            #     time.sleep(5)
+            #     # temp_pose = self.slam_pose
+            #     # self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2] - 0.1), 1)
+            #     # if (self.mbot_status == mbot_status_t.STATUS_COMPLETE):
+            #     #     self.moving_mbot((temp_pose[0], temp_pose[1], temp_pose[2]), 1)
+            #     if state_obj.tag_1_count <= 1:
+            #         self.set_current_state('pickup_1x1_block')
+            #     else:
+            #         self.set_current_state('pickup_3x1_block')
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
                
@@ -226,7 +224,7 @@ class StateMachine():
         this is run when a feedback message is recieved
         """
         msg = pose_xyt_t.decode(data)
-        # print("new slam pose received:", msg.x, msg.y, msg.theta)
+        print("new slam pose received:", msg.x, msg.y, msg.theta)
         self.slam_pose = (msg.x, msg.y, msg.theta)
 
     def mbotstatus_feedback_handler(self, channel, data):

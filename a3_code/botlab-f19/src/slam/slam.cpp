@@ -254,6 +254,7 @@ void OccupancyGridSLAM::updateLocalization(void)
         auto particles = filter_.particles();
 
         lcm_.publish(SLAM_POSE_CHANNEL, &currentPose_);
+        std::cout << "SLAM pose published: " << currentPose_.x << ", " << currentPose_.y << ", " << currentPose_.theta << std::endl;
 #ifdef DEBUG
         for (int i = 0; i < particles.num_particles; i++) {
             particles.particles[i].weight = 1.0 / particles.num_particles;
