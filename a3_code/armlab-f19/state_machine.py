@@ -106,7 +106,6 @@ class StateMachine():
                     self.set_current_state('pickup_1x1_block')
                 else:
                     self.set_current_state('pickup_3x1_block')
-            else if 
         self.get_mbot_feedback()
         self.rexarm.get_feedback()
                
