@@ -124,8 +124,8 @@ class pickup_1x1_block():
                         self.fsm.set_current_state('go_to_garbage')
                 else:
                     self.state = 'scan'
-                    print("current step", self.current_step)
                     self.current_step += 1
+                    print("current step", self.current_step)
 
         if self.state == 'face_to_closest' and self.fsm.mbot_status == mbot_status_t.STATUS_COMPLETE:
             print("Turned to facing block")
@@ -189,6 +189,7 @@ class pickup_1x1_block():
                 self.fsm.moving_mbot_to_block(target_pose)
                 self.state = 'moving_to_closest'
             else:
+                self.fsm.set_current_state('go_to_garbage')
                 self.state = 'idle'
                     
     def face_closest(self):

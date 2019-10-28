@@ -42,8 +42,17 @@ class pickup_3x1_block():
             print("no tag 1")
             return None
         elif self.check_tag1_num() == 1:
+            tag1s = []
+            for tag in self.fsm.tags:
+                if tag.tag_id == 1:
+                    tag1s.append(tag)
             print("Just see 1 surface of long block")
-            return self.fsm.slam_pose[2]
+            pose_tag1 = from_AprilTag_to_pose(tag1s[0], self.fsm.extrinsic_mtx)
+            temp_theta = self.fsm.slam_pose[2]
+            tag1_x = self.fsm.slam_pose[0] + pose_tag1[0] * np.sin(temp_theta) + pose_tag1[1] * np.cos(temp_theta)
+            tag1_y = self.fsm.slam_pose[1] + pose_tag1[1] * np.sin(temp_theta) - pose_tag1[0] * np.cos(temp_theta)
+
+            return self.fsm.slam_pose[2], [tag1_x, tag1_y]
         else:
             tag1s = []
             for tag in self.fsm.tags:

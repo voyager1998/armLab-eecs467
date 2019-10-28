@@ -87,17 +87,20 @@ class Rexarm():
         self.joints[4].set_position(self.position)
 
     def set_positions(self, joint_angles, update_now = True):
-        joint_angles = self.clamp(joint_angles)
-        for i,joint in enumerate(self.joints):
-            self.position[i] = joint_angles[i]
-            if (update_now):
-                joint.set_position(joint_angles[i])
-                # for i in range(10):
-                #     try:
-                #         joint.set_position(joint_angles[i])
-                #     except Exception as e:
-                #         time.sleep(0.5)
-                #         print(e)
+        try:
+            joint_angles = self.clamp(joint_angles)
+            for i,joint in enumerate(self.joints):
+                self.position[i] = joint_angles[i]
+                if (update_now):
+                    joint.set_position(joint_angles[i])
+        except Exception as e:
+            print('set position fail, trying again')
+            time.sleep(2)
+            joint_angles = self.clamp(joint_angles)
+            for i,joint in enumerate(self.joints):
+                self.position[i] = joint_angles[i]
+                if (update_now):
+                    joint.set_position(joint_angles[i])
     
     def set_speeds_normalized_global(self, speed, update_now = True):
         for i,joint in enumerate(self.joints):

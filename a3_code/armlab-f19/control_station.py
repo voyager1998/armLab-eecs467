@@ -318,7 +318,7 @@ class Gui(QMainWindow):
         apriltag_image = image_list[1]
         block_image = image_list[2]
         if(self.ui.radioVideo.isChecked()):
-            self.ui.videoDisplay.setPixmap(self.convertImage(rgb_image))
+            # self.ui.videoDisplay.setPixmap(self.convertImage(rgb_image))
             self.rgb_image = rgb_image
             self.sm.rgb_image = rgb_image
 
