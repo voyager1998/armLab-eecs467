@@ -12,6 +12,7 @@ PICK_RANGE = 0.2
 
 D2R = 3.141592/180.0
 GRIPPER_OPEN = -30 * D2R
+GRIPPER_CLOSE = 8 * D2R
 I2M = 0.0254
 
 PI = 3.141592
@@ -59,19 +60,19 @@ def pick_1x1_block(rexarm, endpoint):
     #rexarm.close_gripper()
     
     # close gripper
-    set_positions[4] = 10 * D2R
+    set_positions[4] = GRIPPER_CLOSE
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
     set_erect(rexarm)
     time.sleep(6)
     
-    set_snake(rexarm)
+    set_snake(rexarm, GRIPPER_CLOSE)
     time.sleep(3)
 
     return 1
 
-def set_erect(rexarm, gripper=10 * D2R):
+def set_erect(rexarm, gripper=GRIPPER_CLOSE):
     # return home
     i = 0
     #while i < 20:
@@ -94,17 +95,12 @@ def set_erect(rexarm, gripper=10 * D2R):
     rexarm.set_positions(set_positions, update_now = True)
 
 def set_snake(rexarm, gripper=10*D2R):
-    i = 0
-    #while i < 20:
-        #try:
     set_positions = [0] * 5
     set_positions[0] = 90 * D2R
     set_positions[1] = 90 * D2R
     set_positions[2] = -90 * D2R
     set_positions[3] = -90 * D2R
     set_positions[4] = gripper
-        #except:
-         #   i += 1
     '''
     if gripper is None:
         set_positions[4] = rexarm.get_positions()[4]
