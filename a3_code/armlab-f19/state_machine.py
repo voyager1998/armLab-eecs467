@@ -21,7 +21,7 @@ from go_to_garbage import go_to_garbage
 
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
-
+PICK_WALL_OFFSET = 0.03
 """
 TODO: Add states and state functions to this class
         to implement all of the required logics
@@ -200,14 +200,24 @@ class StateMachine():
         # tar_x, tar_y = tar_pose[0], tar_pose[1]
         # print("Nico's block pose in world:", tar_x, tar_y)
 
+        temp_theta = self.slam_pose[2]
+        block_pose_world_x = self.slam_pose[0] + block_pose[0] * np.sin(temp_theta) + block_pose[1] * np.cos(temp_theta)
+        block_pose_world_y = self.slam_pose[1] + block_pose[1] * np.sin(temp_theta) - block_pose[0] * np.cos(temp_theta)
+        
+        if block_pose_world_y > 0.8 and block_pose_world_y < 1.2:
+            if block_pose_world_x > 0:
+                print("this is a block near the wall")
+                return (block_pose_world_x, block_pose_world_y-DIST_TO_BLOCK-PICK_WALL_OFFSET)
+            else:
+                print("this is a block in the corner")
+                return (block_pose_world_x+DIST_TO_BLOCK+PICK_WALL_OFFSET, block_pose_world_y-DIST_TO_BLOCK-PICK_WALL_OFFSET)
+
         block_dist = np.sqrt(block_pose[0]** 2 + block_pose[1]** 2)
-        # print("distance to block:", block_dist)
         if block_dist > DIST_TO_BLOCK:
             partial = (block_dist - DIST_TO_BLOCK) / block_dist
             print("partial = ", partial)
         else:
             partial = 1
-        temp_theta = self.slam_pose[2]
         print("current theta:", temp_theta)
         print("current SLAM pose:", self.slam_pose[0], self.slam_pose[1])
         print("current block pose in arm:", block_pose[0], block_pose[1])
