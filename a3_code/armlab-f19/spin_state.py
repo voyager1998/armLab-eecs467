@@ -17,6 +17,7 @@ class spin_state():
         self.closest_angle = 0
         self.closest_tag_number = -1
         self.start_theta = 0
+        self.tag_1_count = 0
 
     def operate_task(self):
         if self.state == 'idle':
@@ -53,6 +54,8 @@ class spin_state():
                 tags = self.fsm.tags
                 for tag in tags:
                     print("see tag", tag.tag_id)
+                    if(tag.tag_id == 1):
+                        tag_1_count += 1
                 closest_at_angle = find_closest_block(tags, self.fsm.extrinsic_mtx)
                 if self.closest_distance > closest_at_angle[1] and closest_at_angle[3] != 7:
                     self.closest_tag = closest_at_angle[2]
@@ -76,6 +79,7 @@ class spin_state():
         self.state = 'watch'
         self.current_step = 0
         self.start_theta = self.fsm.slam_pose[2]
+        self.tag_7_count = 0
 
     def face_closest(self):
         self.fsm.moving_mbot((self.fsm.slam_pose[0], self.fsm.slam_pose[1], self.closest_angle), 1)
