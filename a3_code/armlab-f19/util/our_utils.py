@@ -64,13 +64,49 @@ def pick_1x1_block(rexarm, endpoint):
     rexarm.set_positions(set_positions, update_now = True)
     time.sleep(1)
 
-    set_erect(rexarm)
-    time.sleep(6)
-    
-    set_snake(rexarm, GRIPPER_CLOSE)
-    time.sleep(3)
+INITIAL_POSITION_FOR_SMACK = [0, 0.15, 2.5*I2M, -45]
+def prepare_for_probe(rexarm):
+    initial_position = INITIAL_POSITION_FOR_SMACK
+    for phi in range(-20, -91, -10):
+        initial_position[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+        if joint_positions_endpoint != None:
+            break
+    print('IK returned: ',joint_positions_endpoint)
+    joint_positions_endpoint += [20]
+    rexarm.set_positions(joint_positions_endpoint, update_now = True)
+    time.sleep(5)
 
-    return 1
+def smack_dat_corner_block(rexarm):
+    initial_position = INITIAL_POSITION_FOR_SMACK.copy()
+    initial_position[2] = 1.8*I2M
+    print("begin picking up corner block!")
+    joint_positions_endpoint = None
+    for phi in range(-20, -91, -10):
+        initial_position[3] = phi
+        joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+        print(joint_positions_endpoint, initial_position)
+        if joint_positions_endpoint != None:
+            break
+    joint_positions_endpoint += [20]
+    rexarm.set_positions(joint_positions_endpoint, update_now = True)
+    time.sleep(5)
+
+    # scape arm back
+    SCRAPE_STEPS = 10
+    for i in range(1, SCRAPE_STEPS + 1):
+        initial_position[1] = initial_position[1] - 2.5 * I2M / SCRAPE_STEPS
+        print("SCRAPE STEP: ", i, initial_position)
+        for phi in range(-20, -91, -10):
+            initial_position[3] = phi
+            joint_positions_endpoint = rexarm.rexarm_IK(initial_position)
+            if joint_positions_endpoint != None:
+                break
+        joint_positions_endpoint += [20]
+        rexarm.set_positions(joint_positions_endpoint, update_now = True)
+        time.sleep(1)
+    print('done scraping')    
+
 
 def set_erect(rexarm, gripper=GRIPPER_CLOSE):
     # return home

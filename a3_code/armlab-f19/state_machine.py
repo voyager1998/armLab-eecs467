@@ -63,8 +63,9 @@ class StateMachine():
 
     def set_current_state(self, state):
         self.current_state = state
-        state_obj = getattr(self, state)
-        state_obj.begin_task()
+        if state not in ['manual', 'idle', 'estop', 'calibrate', 'moving_arm', 'moving_mbot']:
+            state_obj = getattr(self, state)
+            state_obj.begin_task()
 
     """ This function is run continuously in a thread"""
 
@@ -179,11 +180,11 @@ class StateMachine():
         self.publish_mbot_command(mbot_command_t.STATE_MOVING,
                 (target_pose_world[0], target_pose_world[1], target_pose_world[2]), [], is_mode_spin)
 
-    def moving_mbot_to_block(self, block_pose): # block_pose = [x, y, z] is the block pose in arm frame
+    DIST_TO_BLOCK = 0.12
+    def moving_mbot_to_block(self, block_pose, dist_to_block=DIST_TO_BLOCK): # block_pose = [x, y, z] is the block pose in arm frame
         """TODO: Implement this function"""
         if self.slam_pose == None:
             self.slam_pose = [0, 0, 0]
-        DIST_TO_BLOCK = 0.12
         # mbot_to_world = np.array([[np.cos(self.slam_pose[2]), -np.sin(self.slam_pose[2]), 0, self.slam_pose[0]],
         #                             [np.sin(self.slam_pose[2]), np.cos(self.slam_pose[2]), 0, self.slam_pose[1]],
         #                             [0,0,1,0],
@@ -200,8 +201,8 @@ class StateMachine():
 
         block_dist = np.sqrt(block_pose[0]** 2 + block_pose[1]** 2)
         # print("distance to block:", block_dist)
-        if block_dist > DIST_TO_BLOCK:
-            partial = (block_dist - DIST_TO_BLOCK) / block_dist
+        if block_dist > dist_to_block:
+            partial = (block_dist - dist_to_block) / block_dist
             print("partial = ", partial)
         else:
             partial = 1
