@@ -51,7 +51,7 @@ class pickup_3x1_block():
            #print("v1", v1)
             #v2 = [self.fsm.slam_pose[0], self.fsm.slam_pose[1]]
             #angle_tri = self.angle(v1, v2)
-            #print("angle: ", angle_tri)
+            #print("angle: ", angle_tri) ok lets try this
             self.fsm.publish_mbot_command(mbot_command_t.STATE_MOVING, (self.fsm.slam_pose[0] + 0.20*math.cos(self.fsm.slam_pose[0]), self.fsm.slam_pose[1] + 0.20*math.sin(self.fsm.slam_pose[1]), 0), [], False) #may need to recalc in different frame
             print("thought it was a bug")
             self.state = 'reverse'
