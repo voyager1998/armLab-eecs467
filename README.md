@@ -6,4 +6,5 @@ https://www.youtube.com/watch?v=vujirtxVxog&feature=youtu.be
 https://youtu.be/q9pwymY6sSU
 ### Pick up one block jammed into the corner
 https://www.youtube.com/watch?v=vFoHoYF92iw&feature=youtu.be
-
+### Pick up the closest block around the bot
+https://youtu.be/0mlsOZvbqoQ
