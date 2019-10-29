@@ -1,4 +1,4 @@
-# armLab-eecs467
+# Autonomous Block-Collecting Bot
 ## Video Demos:
 ### Pick up one block and put it back
 https://www.youtube.com/watch?v=vujirtxVxog&feature=youtu.be
